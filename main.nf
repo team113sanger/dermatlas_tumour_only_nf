@@ -46,8 +46,8 @@ process CHECK_SOMATIC_MNV_CALLS {
 }
 
 workflow {
-    include { FILTER_MAF } from './modules/filter_maf.nf' as FILTER_MATCHED
-    include { FILTER_MAF } from './modules/filter_maf.nf' as FILTER_UNMATCHED
+    // include { FILTER_MAF } from './modules/filter_maf.nf' as FILTER_MATCHED
+    // include { FILTER_MAF } from './modules/filter_maf.nf' as FILTER_UNMATCHED
     
 
     germline_vcfs = Channel.fromPath(params.germline_vcfs, checkIfExists: true)
@@ -68,18 +68,29 @@ workflow {
 
     germline_vcfs = basenames_channel.combine(files_list_channel)
 
-    COUNT_NON_REF_GTS(germline_vcfs)
+    // COUNT_NON_REF_GTS(germline_vcfs)
 
     matched_somatics_vcfs = Channel.fromPath(params.matched_somatic, checkIfExists: true)
+    .splitText()
+    .map { it.trim() }
+    .filter { it != "" }
     matched_channel = matched_somatics_vcfs
     .map { file(it).name }
     .collectFile(name: 'matched_basenames.txt', newLine: true)
+
+    matched_samples = matched_somatics_vcfs
+    .map { file(it).name.split('\\.')[0] }
+    .unique()
+    .collectFile(name: 'matched_sample_ids.txt', newLine: true)
     
     matched_files_list_channel = matched_somatics_vcfs
         .map { file(it) }
         .collect()
     
     unmatched_somatics_vcfs = Channel.fromPath(params.unmatched_somatic, checkIfExists: true)
+    .splitText()
+    .map { it.trim() }
+    .filter { it != "" }
     unmatched_channel = unmatched_somatics_vcfs
     .map { file(it).name }
     .collectFile(name: 'unmatched_basenames.txt', newLine: true)
@@ -87,10 +98,20 @@ workflow {
     unmatched_files_list_channel = unmatched_somatics_vcfs
     .map { file(it) }
     .collect()
+
+
+    unmatched_samples = unmatched_somatics_vcfs
+    .map { file(it).name.split('\\.')[0] }
+    .unique()
+    .collectFile(name: 'unmatched_sample_ids.txt', newLine: true)
+
+    unmatched_samples.view { "Unmatched samples: $it" }
+    matched_samples.view { "Matched samples: $it" }
+    
     
     
 
 
-    FILTER_MATCHED()
+    // FILTER_MATCHED()
 
 }

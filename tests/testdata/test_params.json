@@ -1,4 +1,5 @@
 {
-    "bamfiles": "$baseDir/tests/testdata/**.bam",
-    "germline_vcfs": "$baseDir/tests/testdata/manifest.tsv"
+    "germline_vcfs": "$baseDir/tests/testdata/manifest.tsv",
+    "unmatched_somatic": "$baseDir/tests/testdata/unmatched_somatic_vcfs.tsv",
+    "matched_somatic": "$baseDir/tests/testdata/matched_somatic_vcfs.tsv"
 }
