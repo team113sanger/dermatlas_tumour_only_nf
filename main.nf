@@ -1,35 +1,96 @@
 #!/usr/bin/env nextflow
 nextflow.enable.dsl = 2
 
-process FOO {
-  container "quay.io/biocontainers/samtools:1.9--h91753b0_8"
+process COUNT_NON_REF_GTS {
+  container "gitlab-registry.internal.sanger.ac.uk/dermatlas/analysis-methods/var_filter"
   input:
-  tuple val(metadata), path(bamfile)
+  tuple val(metadata), path(listfile), path(vcf_files)
   
   output:
-  tuple val(metadata), path("*_output_bamfile.bam"), emit: example
+  tuple val(metadata), path("*germline_varcounts.tsv"), emit: varcounts
 
   script:
   """
-  samtools --version
-  echo $bamfile > ${metadata.sample_id}_output_bamfile.bam
+  /opt/repo/count_nonref_gts.pl $file_list > germline_varcounts.tsv
   """
 }
 
+process FILTER_MAF {
+    input: 
+    tuple val(meta), path(list_file), path(vcf_files)
+    path(transcripts)
+    
+    output:
+        path("${meta.analysis_type}.canonical.coding.maf"), emit: maf
+    script:
+    """
+    /opt/repo/reformat_vcf2maf.pl \
+    --build GRCh38 \
+    --keep_multi \
+    --transcripts $transcripts  \
+    --vcflist $list_file \
+    --canonical --exclude_noncoding > ${meta.analysis_type}.canonical.coding.maf
+    """
+}
+
+process CHECK_SOMATIC_MNV_CALLS {
+    input: 
+    tuple val(meta), path(file_list), path(vcf_files)
+    output:
+    path("mnv_check.tsv"), emit: mnv_check
+
+    """
+    cat $file_list | xargs -i zcat {} | /opt/repo/mnv_flagcheck.pl > mnv_check.tsv \
+    2>mnv_check.log"
+    """
+}
+
 workflow {
+    include { FILTER_MAF } from './modules/filter_maf.nf' as FILTER_MATCHED
+    include { FILTER_MAF } from './modules/filter_maf.nf' as FILTER_UNMATCHED
+    
 
-    bamfiles = Channel.fromPath(params.bamfiles, checkIfExists: true) \
-    | map { file -> tuple([sample_id: file.baseName], file)}
-    bamfiles.view()
+    germline_vcfs = Channel.fromPath(params.germline_vcfs, checkIfExists: true)
+        .splitText()
+        .map { it.trim() }
+        .filter { it != "" }
     
+    basenames_channel = germline_vcfs
+        .map { file(it).name }
+        .collectFile(name: 'basenames.txt', newLine: true)
     
-    // tn_pairs = Channel.fromPath(params.manifest, checkIfExists: true) \
-    // | splitCsv(sep:"\t", header:['tumor', 'normal','t_bam','n_bam']) 
-    // | map{ row -> tuple([pair_id: row.normal+ "_" + row.tumor],row.t_bam,row.n_bam) }
-    // tn_pairs.view()
+    files_list_channel = germline_vcfs
+        .map { file(it) }
+        .collect()
     
-    FOO(bamfiles)
-    FOO.out.example.view()
+    basenames_channel.view { "Basenames file: $it" }
+    files_list_channel.view { "Files list: $it" }
 
+    germline_vcfs = basenames_channel.combine(files_list_channel)
+
+    COUNT_NON_REF_GTS(germline_vcfs)
+
+    matched_somatics_vcfs = Channel.fromPath(params.matched_somatic, checkIfExists: true)
+    matched_channel = matched_somatics_vcfs
+    .map { file(it).name }
+    .collectFile(name: 'matched_basenames.txt', newLine: true)
+    
+    matched_files_list_channel = matched_somatics_vcfs
+        .map { file(it) }
+        .collect()
+    
+    unmatched_somatics_vcfs = Channel.fromPath(params.unmatched_somatic, checkIfExists: true)
+    unmatched_channel = unmatched_somatics_vcfs
+    .map { file(it).name }
+    .collectFile(name: 'unmatched_basenames.txt', newLine: true)
+
+    unmatched_files_list_channel = unmatched_somatics_vcfs
+    .map { file(it) }
+    .collect()
+    
+    
+
+
+    FILTER_MATCHED()
 
 }

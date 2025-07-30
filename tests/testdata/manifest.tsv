@@ -1,2 +1,2 @@
-tumor	normal	tumor_file	normal_file 
-CAT001a	CAT001b	tests/testdata/sample_1.bam	tests/testdata/sample_2.bam
+/lustre/scratch127/casm/projects/dermatlas/projects/dermatlas_pu10_project_dir/7347_3283_DERMATLAS_CUTANEOUS_GD_T_CELL_LYMPHOMA_WES/analysis/germline/Final_joint_call/7347_cohort_indel_raw.marked.vcf.gz
+/lustre/scratch127/casm/projects/dermatlas/projects/dermatlas_pu10_project_dir/7347_3283_DERMATLAS_CUTANEOUS_GD_T_CELL_LYMPHOMA_WES/analysis/germline/Final_joint_call/7347_cohort_raw_snps.marked.vcf.gz
