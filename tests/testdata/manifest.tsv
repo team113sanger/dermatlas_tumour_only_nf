@@ -1,2 +1,2 @@
-/lustre/scratch127/casm/projects/dermatlas/projects/dermatlas_pu10_project_dir/7347_3283_DERMATLAS_CUTANEOUS_GD_T_CELL_LYMPHOMA_WES/analysis/germline/Final_joint_call/7347_cohort_indel_raw.marked.vcf.gz
-/lustre/scratch127/casm/projects/dermatlas/projects/dermatlas_pu10_project_dir/7347_3283_DERMATLAS_CUTANEOUS_GD_T_CELL_LYMPHOMA_WES/analysis/germline/Final_joint_call/7347_cohort_raw_snps.marked.vcf.gz
+/home/ubuntu/projects/dermatlas_tumour_only_calling_nf/unmatched_test_temp/7347_cohort_indel_raw.marked.vcf.gz
+/home/ubuntu/projects/dermatlas_tumour_only_calling_nf/unmatched_test_temp/7347_cohort_raw_snps.marked.vcf.gz

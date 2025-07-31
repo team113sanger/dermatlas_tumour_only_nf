@@ -4,14 +4,14 @@ nextflow.enable.dsl = 2
 process COUNT_NON_REF_GTS {
   container "gitlab-registry.internal.sanger.ac.uk/dermatlas/analysis-methods/var_filter"
   input:
-  tuple val(metadata), path(listfile), path(vcf_files)
+  tuple path(file_list), path(vcf_files)
   
   output:
-  tuple val(metadata), path("*germline_varcounts.tsv"), emit: varcounts
+  tuple path("*germline_varcounts.tsv"), emit: varcounts
 
   script:
   """
-  /opt/repo/count_nonref_gts.pl $file_list > germline_varcounts.tsv
+  /opt/repo/count_nonref_gts.pl $file_list > germline_varcounts.tsv 2>germline_varcounts.log
   """
 }
 
@@ -81,8 +81,15 @@ workflow {
     unmatched_samples.view { "Unmatched samples: $it" }
     
     germline_vcfs_combined = germline_basenames.combine(germline_files_list)
+    matched_vcfs_combined = matched_basenames.combine(matched_files_list)
+    unmatched_vcfs_combined = unmatched_basenames.combine(unmatched_files_list)
     
-    // COUNT_NON_REF_GTS(germline_vcfs_combined)
-    // FILTER_MATCHED()
+    germline_vcfs_combined.view { "Germline combined: $it" }
+    matched_vcfs_combined.view { "Matched combined: $it" }
+    unmatched_vcfs_combined.view { "Unmatched combined: $it" }
+    
+    COUNT_NON_REF_GTS(germline_vcfs_combined)
+    // FILTER_MATCHED(matched_vcfs_combined)
+    // FILTER_UNMATCHED(unmatched_vcfs_combined)
 
 }
