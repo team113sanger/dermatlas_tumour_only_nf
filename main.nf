@@ -1,49 +1,8 @@
 #!/usr/bin/env nextflow
 nextflow.enable.dsl = 2
-
-process COUNT_NON_REF_GTS {
-  container "gitlab-registry.internal.sanger.ac.uk/dermatlas/analysis-methods/var_filter"
-  input:
-  tuple path(file_list), path(vcf_files)
-  
-  output:
-  tuple path("*germline_varcounts.tsv"), emit: varcounts
-
-  script:
-  """
-  /opt/repo/count_nonref_gts.pl $file_list > germline_varcounts.tsv 2>germline_varcounts.log
-  """
-}
-
-process FILTER_MAF {
-    input: 
-    tuple val(meta), path(list_file), path(vcf_files)
-    path(transcripts)
-    
-    output:
-        path("${meta.analysis_type}.canonical.coding.maf"), emit: maf
-    script:
-    """
-    /opt/repo/reformat_vcf2maf.pl \
-    --build GRCh38 \
-    --keep_multi \
-    --transcripts $transcripts  \
-    --vcflist $list_file \
-    --canonical --exclude_noncoding > ${meta.analysis_type}.canonical.coding.maf
-    """
-}
-
-process CHECK_SOMATIC_MNV_CALLS {
-    input: 
-    tuple val(meta), path(file_list), path(vcf_files)
-    output:
-    path("mnv_check.tsv"), emit: mnv_check
-
-    """
-    cat $file_list | xargs -i zcat {} | /opt/repo/mnv_flagcheck.pl > mnv_check.tsv \
-    2>mnv_check.log"
-    """
-}
+include { COUNT_NON_REF_GTS } from "./modules/germline_variants.nf"
+include { FILTER_MAF as FILTER_MATCHED } from "./modules/somatic_variants.nf" 
+include { FILTER_MAF as FILTER_UNMATCHED } from "./modules/somatic_variants.nf" 
 
 def processVcfChannel(vcf_param, prefix) {
     def vcfs = Channel.fromPath(vcf_param, checkIfExists: true)
@@ -68,8 +27,11 @@ def processVcfChannel(vcf_param, prefix) {
 }
 
 workflow {
-    // include { FILTER_MAF } from './modules/filter_maf.nf' as FILTER_MATCHED
-    // include { FILTER_MAF } from './modules/filter_maf.nf' as FILTER_UNMATCHED
+
+    
+    
+    
+
     
     def (germline_basenames, germline_files_list, _) = processVcfChannel(params.germline_vcfs, 'germline')
     def (matched_basenames, matched_files_list, matched_samples) = processVcfChannel(params.matched_somatic, 'matched')
@@ -82,14 +44,17 @@ workflow {
     
     germline_vcfs_combined = germline_basenames.combine(germline_files_list)
     matched_vcfs_combined = matched_basenames.combine(matched_files_list)
+    .map { list, files -> tuple(["analysis_type": "matched"], list, files) }
+
     unmatched_vcfs_combined = unmatched_basenames.combine(unmatched_files_list)
+    .map { list, files -> tuple(["analysis_type": "unmatched"], list, files) }
     
     germline_vcfs_combined.view { "Germline combined: $it" }
     matched_vcfs_combined.view { "Matched combined: $it" }
     unmatched_vcfs_combined.view { "Unmatched combined: $it" }
     
     COUNT_NON_REF_GTS(germline_vcfs_combined)
-    // FILTER_MATCHED(matched_vcfs_combined)
-    // FILTER_UNMATCHED(unmatched_vcfs_combined)
+    FILTER_MATCHED(matched_vcfs_combined)
+    FILTER_UNMATCHED(unmatched_vcfs_combined)
 
 }
