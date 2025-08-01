@@ -4,3 +4,6 @@ execution_report*
 .nextflow/*
 .nf-test*
 .nf-test/*
+unmatched_test_temp
+caveman_files/*
+pindel_files/*

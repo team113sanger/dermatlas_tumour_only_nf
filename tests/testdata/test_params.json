@@ -1,5 +1,6 @@
 {
     "germline_vcfs": "$baseDir/tests/testdata/manifest.tsv",
     "unmatched_somatic": "$baseDir/tests/testdata/unmatched_somatic_vcfs.tsv",
-    "matched_somatic": "$baseDir/tests/testdata/matched_somatic_vcfs.tsv"
+    "matched_somatic": "$baseDir/tests/testdata/matched_somatic_vcfs.tsv",
+    "transcripts": "$baseDir/tests/testdata/dermatlas_noncanonical_transcripts_ens103.v2.tsv"
 }

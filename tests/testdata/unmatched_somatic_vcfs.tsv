@@ -1,6 +1,6 @@
-/lustre/scratch127/casm/projects/dermatlas/projects/dermatlas_pu10_project_dir/7347_3283_DERMATLAS_CUTANEOUS_GD_T_CELL_LYMPHOMA_WES/analysis/caveman_files/PD62428a/PD62428a.smartphase.vep.vcf.gz
-/lustre/scratch127/casm/projects/dermatlas/projects/dermatlas_pu10_project_dir/7347_3283_DERMATLAS_CUTANEOUS_GD_T_CELL_LYMPHOMA_WES/analysis/caveman_files/PD62430a/PD62430a.smartphase.vep.vcf.gz
-/lustre/scratch127/casm/projects/dermatlas/projects/dermatlas_pu10_project_dir/7347_3283_DERMATLAS_CUTANEOUS_GD_T_CELL_LYMPHOMA_WES/analysis/caveman_files/PD65464a/PD65464a.smartphase.vep.vcf.gz
-/lustre/scratch127/casm/projects/dermatlas/projects/dermatlas_pu10_project_dir/7347_3283_DERMATLAS_CUTANEOUS_GD_T_CELL_LYMPHOMA_WES/analysis/pindel_files/PD62428a/PD62428a.pindel.vep.vcf.gz
-/lustre/scratch127/casm/projects/dermatlas/projects/dermatlas_pu10_project_dir/7347_3283_DERMATLAS_CUTANEOUS_GD_T_CELL_LYMPHOMA_WES/analysis/pindel_files/PD62430a/PD62430a.pindel.vep.vcf.gz
-/lustre/scratch127/casm/projects/dermatlas/projects/dermatlas_pu10_project_dir/7347_3283_DERMATLAS_CUTANEOUS_GD_T_CELL_LYMPHOMA_WES/analysis/pindel_files/PD65464a/PD65464a.pindel.vep.vcf.gz
+/home/ubuntu/projects/dermatlas_tumour_only_calling_nf/caveman_files/PD62428a/PD62428a.smartphase.vep.vcf.gz
+/home/ubuntu/projects/dermatlas_tumour_only_calling_nf/caveman_files/PD62430a/PD62430a.smartphase.vep.vcf.gz
+/home/ubuntu/projects/dermatlas_tumour_only_calling_nf/caveman_files/PD65464a/PD65464a.smartphase.vep.vcf.gz
+/home/ubuntu/projects/dermatlas_tumour_only_calling_nf/pindel_files/PD62428a/PD62428a.pindel.vep.vcf.gz
+/home/ubuntu/projects/dermatlas_tumour_only_calling_nf/pindel_files/PD62430a/PD62430a.pindel.vep.vcf.gz
+/home/ubuntu/projects/dermatlas_tumour_only_calling_nf/pindel_files/PD65464a/PD65464a.pindel.vep.vcf.gz
