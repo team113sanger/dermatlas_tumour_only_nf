@@ -1,8 +1,8 @@
 #!/usr/bin/env nextflow
 nextflow.enable.dsl = 2
 include { COUNT_NON_REF_GTS } from "./modules/germline_variants.nf"
-include { FILTER_MAF as FILTER_MATCHED } from "./modules/somatic_variants.nf" 
-include { FILTER_MAF as FILTER_UNMATCHED } from "./modules/somatic_variants.nf" 
+include { SUBSET_MAF as SUBSET_MATCHED } from "./modules/somatic_variants.nf" 
+include { SUBSET_MAF as SUBSET_UNMATCHED } from "./modules/somatic_variants.nf" 
 include { CHECK_SOMATIC_MNV_CALLS } from "./modules/somatic_variants.nf"
 
 def processVcfChannel(vcf_param, prefix) {
@@ -53,7 +53,21 @@ workflow {
     unmatched_vcfs_combined.view { "Unmatched combined: $it" }
     
     COUNT_NON_REF_GTS(germline_vcfs_combined)
-    FILTER_MATCHED(matched_vcfs_combined, file(params.transcripts))
-    FILTER_UNMATCHED(unmatched_vcfs_combined,file(params.transcripts))
+    SUBSET_MATCHED(matched_vcfs_combined, file(params.transcripts))
+    SUBSET_UNMATCHED(unmatched_vcfs_combined,file(params.transcripts))
     CHECK_SOMATIC_MNV_CALLS(matched_vcfs_combined)
+
+    MERGE_MAFS = Channel.empty()
+    FIND_SNPS = Channel.empty()
+
+    FILTER_AND_FLAG_VARIANTS(
+        COUNT_NON_REF_GTS.out.varcounts,
+        FIND_SNPS.out.dbsnp_positions,
+        CHECK_SOMATIC_MNV_CALLS.out.mnv_check,
+        SUBSET_MATCHED.out.maf,
+        SUBSET_UNMATCHED.out.maf
+
+    )
+
+
 }

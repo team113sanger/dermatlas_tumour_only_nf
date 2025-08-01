@@ -1,5 +1,5 @@
 
-process FILTER_MAF {
+process SUBSET_MAF {
     publishDir "${params.outdir}/${meta.analysis_type}", mode: 'copy', pattern: "*.maf"
     container "gitlab-registry.internal.sanger.ac.uk/dermatlas/analysis-methods/maf:latest"
     input: 
@@ -61,10 +61,26 @@ process FIND_SNP_POSITIONS {
 
     output:
     path("*.positions"), emit: snp_positions
+    path("*.dbsnp.tsv"), emit: dbsnp_positions
 
     script:
     """
     cut -f 4,13 $unmatched_maf | grep -v Chromo > ${meta.sample_id}.positions
     tabix $dbsnp_file -R ${meta.sample_id}.positions > ${meta.sample_id}.dbsnp.tsv
+    """
+}
+process FILTER_AND_FLAG_VARIANTS {
+    container "gitlab-registry.internal.sanger.ac.uk/dermatlas/analysis-methods/var_filter"
+    publishDir "${params.outdir}/filtered", mode: 'copy', pattern: "*.maf"
+
+    input:
+    path(varcounts), path(dbsnp_positions), path(mnv_check), path(matched_maf), path(unmatched_maf)
+
+    output:
+    tuple val(meta), path("filtered.maf"), emit: filtered_maf
+
+    script:
+    """
+    Rscript /opt/repo/unmatched_tumour_filter.R ${baseDir}/assets/filter_config.R"
     """
 }
