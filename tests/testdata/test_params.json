@@ -2,5 +2,10 @@
     "germline_vcfs": "$baseDir/tests/testdata/manifest.tsv",
     "unmatched_somatic": "$baseDir/tests/testdata/unmatched_somatic_vcfs.tsv",
     "matched_somatic": "$baseDir/tests/testdata/matched_somatic_vcfs.tsv",
-    "transcripts": "$baseDir/tests/testdata/dermatlas_noncanonical_transcripts_ens103.v2.tsv"
+    "unmatched_maf": "$baseDir/tests/testdata/combined_cohorts_keep_unmatched.maf",
+    "transcripts": "$baseDir/tests/testdata/dermatlas_noncanonical_transcripts_ens103.v2.tsv",
+    "cgc_file": "$baseDir/tests/testdata/cgc_genes.list", 
+    "oncokb_file": "$baseDir/tests/testdata/cancerGeneList.list",
+    "hotspot_file": "$baseDir/tests/testdata/cancerhotspots_metadata.GRCh38.tsv",
+    "dbsnp_file": "$baseDir/tests/testdata/dbSNP155.GRCh38.GCF_000001405.39_AFS.WES5.tsv.gz{,.tbi}"
 }

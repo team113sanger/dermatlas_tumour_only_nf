@@ -3,7 +3,7 @@ nextflow.enable.dsl = 2
 include { COUNT_NON_REF_GTS } from "./modules/germline_variants.nf"
 include { SUBSET_MAF as SUBSET_MATCHED } from "./modules/somatic_variants.nf" 
 include { SUBSET_MAF as SUBSET_UNMATCHED } from "./modules/somatic_variants.nf" 
-include { CHECK_SOMATIC_MNV_CALLS } from "./modules/somatic_variants.nf"
+include { CHECK_SOMATIC_MNV_CALLS; FIND_SNP_POSITIONS; GENERATE_CONFIG_FILE; FILTER_AND_FLAG_VARIANTS } from "./modules/somatic_variants.nf"
 
 def processVcfChannel(vcf_param, prefix) {
     def vcfs = Channel.fromPath(vcf_param, checkIfExists: true)
@@ -55,28 +55,39 @@ workflow {
     COUNT_NON_REF_GTS(germline_vcfs_combined)
     SUBSET_MATCHED(matched_vcfs_combined, file(params.transcripts))
     SUBSET_UNMATCHED(unmatched_vcfs_combined,file(params.transcripts))
-    CHECK_SOMATIC_MNV_CALLS(matched_vcfs_combined)
+    
+    CHECK_SOMATIC_MNV_CALLS(unmatched_vcfs_combined)
 
-    MERGE_MAFS = Channel.empty()
-    FIND_SNPS = Channel.empty()
+    maf_ch = Channel.of(file(params.unmatched_maf))
+    .map{ file ->
+        def meta = ["sample_id": "combined_cohorts_keep_unmatched"]
+        return tuple(meta, file)}
 
+    FIND_SNP_POSITIONS(maf_ch, file(params.dbsnp_file))
 
       GENERATE_CONFIG_FILE(
+        maf_ch,
         COUNT_NON_REF_GTS.out.varcounts,
-        FIND_SNPS.out.dbsnp_positions,
+        FIND_SNP_POSITIONS.out.dbsnp_positions,
         CHECK_SOMATIC_MNV_CALLS.out.mnv_check,
         SUBSET_MATCHED.out.maf,
-        SUBSET_UNMATCHED.out.maf
+        SUBSET_UNMATCHED.out.maf,
+        params.cgc_file,
+        params.oncokb_file,
+        params.hotspot_file
     )
 
-
     FILTER_AND_FLAG_VARIANTS(
+        maf_ch,
         COUNT_NON_REF_GTS.out.varcounts,
-        FIND_SNPS.out.dbsnp_positions,
+        FIND_SNP_POSITIONS.out.dbsnp_positions,
         CHECK_SOMATIC_MNV_CALLS.out.mnv_check,
         SUBSET_MATCHED.out.maf,
-        SUBSET_UNMATCHED.out.maf
-
+        SUBSET_UNMATCHED.out.maf,
+        params.cgc_file,
+        params.oncokb_file,
+        params.hotspot_file,
+        GENERATE_CONFIG_FILE.out.config
     )
 
 
