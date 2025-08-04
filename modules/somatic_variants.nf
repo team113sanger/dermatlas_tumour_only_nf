@@ -74,7 +74,11 @@ process FILTER_AND_FLAG_VARIANTS {
     publishDir "${params.outdir}/filtered", mode: 'copy', pattern: "*.maf"
 
     input:
-    path(varcounts), path(dbsnp_positions), path(mnv_check), path(matched_maf), path(unmatched_maf)
+    path(varcounts)
+    path(dbsnp_positions)
+    path(mnv_check)
+    path(matched_maf)
+    path(unmatched_maf)
 
     output:
     tuple val(meta), path("filtered.maf"), emit: filtered_maf

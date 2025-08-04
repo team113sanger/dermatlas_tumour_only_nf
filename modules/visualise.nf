@@ -1,3 +1,36 @@
+process GENERATE_CONFIG_FILE {
+    input:
+    path(varcounts)
+    path(dbsnp_positions)
+    path(mnv_check)
+    path(matched_maf)
+    path(unmatched_maf)
+
+    output:
+    tuple val(meta), path("config.yaml"), emit: config
+
+    script:
+    """
+    cat > dynamic_config.R << 'EOF'
+    # Input a MAF file with DERMATLAS-filtered variant calls from unmatched tumours
+    maf_file <- "${params.maf_file}"
+    # Output file name  
+    out_file <- "${params.out_file}"
+    maf_dir <- "${params.maf_dir}"
+    # Shared external data sources
+    cgc_file <- "${params.cgc_file}"
+    oncokb_file <- "${params.oncokb_file}"
+    hotspot_file <- "${params.hotspot_file}"
+    # Cohort-specific data (must be generated per cohort/study)
+    unfiltered_matched_maf <- "${params.unfiltered_matched_maf}"
+    unfiltered_unmatched_maf <- "${params.unfiltered_unmatched_maf}"
+    germline_file <- "${varcounts}"
+    snp_file <- "${params.snp_file}"
+    mnv_file <- "${mnv_check}"
+    EOF
+    """
+}
+
 process CATEGORISE_AND_PLOT_VARIANTS {
     container "gitlab-registry.internal.sanger.ac.uk/dermatlas/analysis-methods/var_filter"
     publishDir "${params.outdir}/plots", mode: 'copy', pattern: "*.png"

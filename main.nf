@@ -60,6 +60,16 @@ workflow {
     MERGE_MAFS = Channel.empty()
     FIND_SNPS = Channel.empty()
 
+
+      GENERATE_CONFIG_FILE(
+        COUNT_NON_REF_GTS.out.varcounts,
+        FIND_SNPS.out.dbsnp_positions,
+        CHECK_SOMATIC_MNV_CALLS.out.mnv_check,
+        SUBSET_MATCHED.out.maf,
+        SUBSET_UNMATCHED.out.maf
+    )
+
+
     FILTER_AND_FLAG_VARIANTS(
         COUNT_NON_REF_GTS.out.varcounts,
         FIND_SNPS.out.dbsnp_positions,
