@@ -9,12 +9,13 @@ process SUBSET_MAF {
     output:
     tuple val(meta), path("${meta.analysis_type}.canonical.coding.maf"), emit: maf
     script:
+    list = file_list[0]
     """
     /opt/repo/reformat_vcf2maf.pl \
     --build GRCh38 \
     --keep_multi \
     --transcripts $transcripts  \
-    --vcflist $file_list \
+    --vcflist $list \
     --canonical --exclude_noncoding > ${meta.analysis_type}.canonical.coding.maf
     """
 }
@@ -30,8 +31,9 @@ process CHECK_SOMATIC_MNV_CALLS {
     path("mnv_check.tsv"), emit: mnv_check
     
     script:
+    list = file_list[0]
     """
-    cat $file_list | xargs -i zcat {} | /opt/repo/mnv_flagcheck.pl > mnv_check.tsv 2>mnv_check.log
+    cat $list | xargs -i zcat {} | /opt/repo/mnv_flagcheck.pl > mnv_check.tsv 2>mnv_check.log
     """
 }
 
