@@ -49,9 +49,9 @@ workflow {
     .merge(matched_files_list) { a,b -> tuple(a,b)}
     .map { files,list -> tuple(["analysis_type": "unmatched"], files,list) }
     
-    germline_vcfs_combined.view { "Germline combined: $it" }
-    matched_vcfs_combined.view { "Matched combined: $it" }
-    unmatched_vcfs_combined.view { "Unmatched combined: $it" }
+    // germline_vcfs_combined.view { "Germline combined: $it" }
+    // matched_vcfs_combined.view { "Matched combined: $it" }
+    // unmatched_vcfs_combined.view { "Unmatched combined: $it" }
     
     COUNT_NON_REF_GTS(germline_vcfs_combined)
     SUBSET_MATCHED(matched_vcfs_combined, file(params.transcripts))
@@ -73,9 +73,9 @@ workflow {
         CHECK_SOMATIC_MNV_CALLS.out.mnv_check,
         SUBSET_MATCHED.out.maf,
         SUBSET_UNMATCHED.out.maf,
-        params.cgc_file,
-        params.oncokb_file,
-        params.hotspot_file
+        file(params.cgc_file),
+        file(params.oncokb_file),
+        file(params.hotspot_file)
     )
 
     FILTER_AND_FLAG_VARIANTS(

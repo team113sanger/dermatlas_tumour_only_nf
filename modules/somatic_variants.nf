@@ -1,6 +1,6 @@
 
 process SUBSET_MAF {
-    publishDir "${params.outdir}/${meta.analysis_type}", mode: 'copy', pattern: "*.maf"
+    publishDir "${params.outdir}/${meta.analysis_type}_unfiltered", mode: 'copy', pattern: "*.maf"
     container "gitlab-registry.internal.sanger.ac.uk/dermatlas/analysis-methods/maf:latest"
     input: 
     tuple val(meta), path(file_list), path(vcf_files)
@@ -22,7 +22,7 @@ process SUBSET_MAF {
 
 process CHECK_SOMATIC_MNV_CALLS {
     container "gitlab-registry.internal.sanger.ac.uk/dermatlas/analysis-methods/var_filter"
-    publishDir "${params.outdir}/snp_check", mode: 'copy', pattern: "*.maf"
+    publishDir "${params.outdir}/mnv_check", mode: 'copy', pattern: "*.maf"
 
     input: 
     tuple val(meta), path(file_list), path(vcf_files)
@@ -54,7 +54,7 @@ process CHECK_SOMATIC_MNV_CALLS {
 
 process FIND_SNP_POSITIONS {
     container "quay.io/biocontainers/tabix:1.11--hdfd78af_0"
-    publishDir "${params.outdir}/snp_check", mode: 'copy', pattern: "*.tsv"
+    publishDir "${params.outdir}/snp_check", mode: 'copy', pattern: "*"
 
     input:
     tuple val(meta), path(unmatched_maf)
@@ -73,7 +73,7 @@ process FIND_SNP_POSITIONS {
 }
 process FILTER_AND_FLAG_VARIANTS {
     container "gitlab-registry.internal.sanger.ac.uk/dermatlas/analysis-methods/var_filter"
-    publishDir "${params.outdir}/filtered/combined", mode: 'copy', pattern: "*.maf"
+    publishDir "${params.outdir}/release_${params.release_verion}/filtered/combined", mode: 'copy', pattern: "*.maf"
 
     input:
     tuple val(meta), path(input_maf)
@@ -97,6 +97,8 @@ process FILTER_AND_FLAG_VARIANTS {
 }
 
 process GENERATE_CONFIG_FILE {
+    publishDir "${params.outdir}/release_${params.release_verion}", mode: 'copy', pattern: "*.R"
+    
     input:
     tuple val(meta), path(input_maf)
     path(varcounts)
@@ -109,7 +111,7 @@ process GENERATE_CONFIG_FILE {
     path(hotspot_file)
 
     output:
-    tuple val(meta), path("config.R"), emit: config
+    path("config.R"), emit: config
 
     script:
     """
