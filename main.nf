@@ -4,6 +4,7 @@ include { COUNT_NON_REF_GTS } from "./modules/germline_variants.nf"
 include { SUBSET_MAF as SUBSET_MATCHED } from "./modules/somatic_variants.nf" 
 include { SUBSET_MAF as SUBSET_UNMATCHED } from "./modules/somatic_variants.nf" 
 include { CHECK_SOMATIC_MNV_CALLS; FIND_SNP_POSITIONS; GENERATE_CONFIG_FILE; FILTER_AND_FLAG_VARIANTS } from "./modules/somatic_variants.nf"
+include { CATEGORISE_VARIANTS; PLOT_VARIANTS } from "./modules/visualise.nf"
 
 def processVcfChannel(vcf_param, prefix) {
     def vcfs = Channel.fromPath(vcf_param, checkIfExists: true)
@@ -89,6 +90,15 @@ workflow {
         params.hotspot_file,
         GENERATE_CONFIG_FILE.out.config
     )
+    CATEGORISE_VARIANTS(
+        FILTER_AND_FLAG_VARIANTS.out.filtered_maf,
+        Channel.of(2,3,4,5,6,7,8,9,10)
+    )
+    PLOT_VARIANTS(
+        CATEGORISE_VARIANTS.out.tier_maf,
+        unmatched_samples
+    )
+
 
 
 }

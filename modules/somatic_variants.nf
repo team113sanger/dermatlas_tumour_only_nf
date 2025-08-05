@@ -31,8 +31,7 @@ process CHECK_SOMATIC_MNV_CALLS {
     
     script:
     """
-    cat $file_list | xargs -i zcat {} | /opt/repo/mnv_flagcheck.pl > mnv_check.tsv \
-    2>mnv_check.log
+    cat $file_list | xargs -i zcat {} | /opt/repo/mnv_flagcheck.pl > mnv_check.tsv 2>mnv_check.log
     """
 }
 
@@ -75,19 +74,19 @@ process FILTER_AND_FLAG_VARIANTS {
     publishDir "${params.outdir}/filtered/combined", mode: 'copy', pattern: "*.maf"
 
     input:
-    path(input_maf)
+    tuple val(meta), path(input_maf)
     path(varcounts)
     path(dbsnp_positions)
     path(mnv_check)
-    path(matched_maf)
-    path(unmatched_maf)
+    tuple val(meta_m), path(matched_maf)
+    tuple val(meta_u), path(unmatched_maf)
     path(cgc_file)
     path(oncokb_file)
     path(hotspot_file)
     path(config_file)
 
     output:
-    tuple val(meta), path("filtered.maf"), emit: filtered_maf
+    tuple val(meta), path("${meta.sample_id}.annotated.maf"), emit: filtered_maf
 
     script:
     """
