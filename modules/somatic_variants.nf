@@ -7,7 +7,7 @@ process SUBSET_MAF {
     path(transcripts)
     
     output:
-    path("${meta.analysis_type}.canonical.coding.maf"), emit: maf
+    tuple val(meta), path("${meta.analysis_type}.canonical.coding.maf"), emit: maf
     script:
     """
     /opt/repo/reformat_vcf2maf.pl \

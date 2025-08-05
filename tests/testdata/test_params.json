@@ -1,5 +1,5 @@
 {
-    "germline_vcfs": "$baseDir/tests/testdata/manifest.tsv",
+    "germline_vcfs": "$baseDir/tests/testdata/germline_variant_files.tsv",
     "unmatched_somatic": "$baseDir/tests/testdata/unmatched_somatic_vcfs.tsv",
     "matched_somatic": "$baseDir/tests/testdata/matched_somatic_vcfs.tsv",
     "unmatched_maf": "$baseDir/tests/testdata/combined_cohorts_keep_unmatched.maf",
