@@ -1,11 +1,12 @@
 process CATEGORISE_VARIANTS {
+    publishDir "${params.outdir}/release_${params.release_verion}/qc_tier${tier}", mode: 'copy', pattern: "*"
 
     input: 
     tuple val(meta), path(filtered_maf)
-    each(g)
+    each(tier)
 
     output:
-    path("${meta.sample_id}_unmatched_keep_annotated.tier${g}.maf"), emit: tier_maf
+    tuple val(meta), val(tier), path("${meta.sample_id}_unmatched_keep_annotated.tier${tier}.maf"), emit: tier_maf
 
     script:
     """
@@ -14,16 +15,16 @@ process CATEGORISE_VARIANTS {
     colnum=\$(head -n1 ${filtered_maf} | awk -v RS='\t' '/Flagging_Tier/{print NR; exit}')
 
     # Filter MAF file based on tier
-    cat ${filtered_maf} | awk -v col=\$colnum -v tier=${g} 'BEGIN{OFS=IFS="\t"}{if(/Hugo/ || \$col >= tier){print}}' > "${meta.sample_id}_unmatched_keep_annotated.tier${g}.maf"
+    cat ${filtered_maf} | awk -v col=\$colnum -v tier=${tier} 'BEGIN{OFS=IFS="\t"}{if(/Hugo/ || \$col >= tier){print}}' > "${meta.sample_id}_unmatched_keep_annotated.tier${tier}.maf"
     """
 }
 
 process PLOT_VARIANTS {
-    container "gitlab-registry.internal.sanger.ac.uk/dermatlas/analysis-methods/var_filter"
-    publishDir "${params.outdir}/plots", mode: 'copy', pattern: "*.png"
+    container "gitlab-registry.internal.sanger.ac.uk/dermatlas/analysis-methods/maf"
+    publishDir "${params.outdir}/release_${params.release_verion}/qc_tier${tier}", mode: 'copy', pattern: "*"
 
     input:
-    tuple val(meta), path(tier_maf)
+    tuple val(meta), val(tier), path(tier_maf)
     path(sample_list)
 
     output:
@@ -49,24 +50,13 @@ process PLOT_VARIANTS {
     plot_height=\$(echo \$plot_height*1.5 | bc -l)
     
     # Generate VAF vs depth plot
-    Rscript ${SCRIPTDIR}/plot_vaf_vs_depth_from_maf.R \\
-        --file ${maf_file} \\
-        --samplefile ${sample_list} \\
-        --width 10 \\
-        --height \$plot_height \\
-        -ncol 5
+    Rscript /opt/repo/plot_vaf_vs_depth_from_maf.R --file ${tier_maf} --samplefile ${sample_list} --width 10 --height \$plot_height -ncol 5
     
     # Extract top genes and create tile plot
     cut -f 3 top_recurrently_mutated_genes.tsv | sort -u | grep -v Hugo_ > top_genes.list
     
-    Rscript ${SCRIPTDIR}/maketileplot_from_maf.R \\
-        -a ${maf_file} \\
-        -s ${sample_list} \\
-        -g top_genes.list \\
-        --sortbyfrequency \\
-        -w 8 \\
-        -t 5
+    Rscript /opt/repo/maketileplot_from_maf.R -a ${tier_maf} -s ${sample_list} -g top_genes.list --sortbyfrequency -w 8 -t 5
     
-    echo "Rscript ${SCRIPTDIR}/maketileplot_from_maf.R -a ${maf_file} -s ${sample_list} -g top_genes.list --sortbyfrequency -w 8 -t 5"
+    echo "Rscript /opt/repo/maketileplot_from_maf.R -a ${tier_maf} -s ${sample_list} -g top_genes.list --sortbyfrequency -w 8 -t 5"
     """
 }
