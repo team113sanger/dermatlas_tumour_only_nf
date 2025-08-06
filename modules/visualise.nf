@@ -28,12 +28,12 @@ process PLOT_VARIANTS {
     path(sample_list)
 
     output:
-    path("*.png"), emit: plots
+    path("*"), emit: plots
 
     script:
     """
     # Find sample column number
-    sample_col=\$(head -n1 ${tier_maf} | sed 's/\t/\n/g' | grep -n Barcode | cut -f 1 -d ":")
+    sample_col=\$(head -n1 ${tier_maf} | tr '\t' '\n' | grep -n Barcode | cut -f 1 -d ":")
     
     # Calculate plot height based on number of samples
     plot_height=\$(cat ${sample_list} | wc -l)
