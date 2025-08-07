@@ -95,8 +95,7 @@ workflow {
         Channel.of(2,3,4,5,6,7,8,9,10)
     )
     PLOT_VARIANTS(
-        CATEGORISE_VARIANTS.out.tier_maf,
-        unmatched_samples
+        CATEGORISE_VARIANTS.out.tier_maf.combine(unmatched_samples)
     )
 
 

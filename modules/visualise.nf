@@ -24,8 +24,7 @@ process PLOT_VARIANTS {
     publishDir "${params.outdir}/release_${params.release_verion}/qc_tier${tier}", mode: 'copy', pattern: "*"
 
     input:
-    tuple val(meta), val(tier), path(tier_maf)
-    path(sample_list)
+    tuple val(meta), val(tier), path(tier_maf), path(sample_list)
 
     output:
     path("*"), emit: plots
