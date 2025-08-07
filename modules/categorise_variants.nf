@@ -1,5 +1,5 @@
 process CATEGORISE_VARIANTS {
-    publishDir "${params.outdir}/release_${params.release_version}/qc_tier${tier}", mode: 'copy', pattern: "*"
+    publishDir "${params.outdir}/release_${params.release_version}/QC_keep/qc_tier${tier}", mode: 'copy', pattern: "*"
 
     input: 
     tuple val(meta), path(filtered_maf)
@@ -27,7 +27,7 @@ process CATEGORISE_VARIANTS {
 
 process PLOT_VARIANTS {
     container "gitlab-registry.internal.sanger.ac.uk/dermatlas/analysis-methods/maf"
-    publishDir "${params.outdir}/release_${params.release_version}/qc_tier${tier}", mode: 'copy', pattern: "*"
+    publishDir "${params.outdir}/release_${params.release_version}/QC_keep/qc_tier${tier}", mode: 'copy', pattern: "*"
 
     input:
     tuple val(meta), val(tier), path(tier_maf), path(sample_list)

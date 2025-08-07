@@ -8,6 +8,7 @@ process SUBSET_MAF {
     
     output:
     tuple val(meta), path("${meta.analysis_type}.canonical.coding.maf"), emit: maf
+    
     script:
     list = file_list[0]
     """
@@ -34,7 +35,9 @@ process CHECK_SOMATIC_MNV_CALLS {
     
     output:
     path("mnv_check.tsv"), emit: mnv_check
-    
+    path("mnv_check.log"), emit: mnv_log
+
+
     script:
     list = file_list[0]
     """
@@ -44,7 +47,6 @@ process CHECK_SOMATIC_MNV_CALLS {
     stub:
     """
     echo -e "Sample\tMNV_Count" > mnv_check.tsv
-    echo -e "sample1\t5" >> mnv_check.tsv
     """
 }
 

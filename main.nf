@@ -35,10 +35,10 @@ workflow {
     def (matched_basenames, matched_files_list, matched_samples) = processVcfChannel(params.matched_somatic_vcfs, 'matched')
     def (unmatched_basenames, unmatched_files_list, unmatched_samples) = processVcfChannel(params.unmatched_somatic_vcfs, 'unmatched')
     
-    germline_basenames.view { "Germline basenames file: $it" }
-    germline_files_list.view { "Germline files list: $it" }
-    matched_samples.view { "Matched samples: $it" }
-    unmatched_samples.view { "Unmatched samples: $it" }
+    // germline_basenames.view { "Germline basenames file: $it" }
+    // germline_files_list.view { "Germline files list: $it" }
+    // matched_samples.view { "Matched samples: $it" }
+    // unmatched_samples.view { "Unmatched samples: $it" }
     
     germline_vcfs_combined = germline_basenames
     .merge(germline_files_list) { a,b -> tuple(a,b)}

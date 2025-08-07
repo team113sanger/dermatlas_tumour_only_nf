@@ -8,5 +8,5 @@
     "oncokb_file": "s3://t113-test-artefacts/nf-test/tumor_only/resources/cancerGeneList.list",
     "hotspot_file": "s3://t113-test-artefacts/nf-test/tumor_only/resources/cancerhotspots_metadata.GRCh38.tsv",
     "dbsnp_file": "s3://t113-test-artefacts/nf-test/tumor_only/dbSNP155.GRCh38.GCF_000001405.39_AFS.WES5.tsv.gz{,.tbi}",
-    "release_verion": "v1"
+    "release_version": "v1"
 }
