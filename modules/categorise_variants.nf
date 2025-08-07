@@ -1,5 +1,5 @@
 process CATEGORISE_VARIANTS {
-    publishDir "${params.outdir}/release_${params.release_verion}/qc_tier${tier}", mode: 'copy', pattern: "*"
+    publishDir "${params.outdir}/release_${params.release_version}/qc_tier${tier}", mode: 'copy', pattern: "*"
 
     input: 
     tuple val(meta), path(filtered_maf)
@@ -17,11 +17,17 @@ process CATEGORISE_VARIANTS {
     # Filter MAF file based on tier
     cat ${filtered_maf} | awk -v col=\$colnum -v tier=${tier} 'BEGIN{OFS=IFS="\t"}{if(/Hugo/ || \$col >= tier){print}}' > "${meta.sample_id}_unmatched_keep_annotated.tier${tier}.maf"
     """
+
+    stub:
+    """
+    echo -e "Hugo_Symbol\tEntrez_Gene_Id\tCenter\tBarcode\tFlagging_Tier" > ${meta.sample_id}_unmatched_keep_annotated.tier${tier}.maf
+    echo -e "TP53\t7157\ttest_center\tsample1\t${tier}" >> ${meta.sample_id}_unmatched_keep_annotated.tier${tier}.maf
+    """
 }
 
 process PLOT_VARIANTS {
     container "gitlab-registry.internal.sanger.ac.uk/dermatlas/analysis-methods/maf"
-    publishDir "${params.outdir}/release_${params.release_verion}/qc_tier${tier}", mode: 'copy', pattern: "*"
+    publishDir "${params.outdir}/release_${params.release_version}/qc_tier${tier}", mode: 'copy', pattern: "*"
 
     input:
     tuple val(meta), val(tier), path(tier_maf), path(sample_list)
@@ -57,5 +63,13 @@ process PLOT_VARIANTS {
     Rscript /opt/repo/maketileplot_from_maf.R -a ${tier_maf} -s ${sample_list} -g top_genes.list --sortbyfrequency -w 8 -t 5
     
     echo "Rscript /opt/repo/maketileplot_from_maf.R -a ${tier_maf} -s ${sample_list} -g top_genes.list --sortbyfrequency -w 8 -t 5"
+    """
+
+    stub:
+    """
+    echo "stub" > vaf_depth_plot.pdf
+    echo "stub" > tile_plot.pdf
+    echo "stub" > top_recurrently_mutated_genes.tsv
+    echo "TP53" > top_genes.list
     """
 }

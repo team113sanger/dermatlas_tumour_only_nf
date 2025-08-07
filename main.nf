@@ -3,8 +3,9 @@ nextflow.enable.dsl = 2
 include { COUNT_NON_REF_GTS } from "./modules/germline_variants.nf"
 include { SUBSET_MAF as SUBSET_MATCHED } from "./modules/somatic_variants.nf" 
 include { SUBSET_MAF as SUBSET_UNMATCHED } from "./modules/somatic_variants.nf" 
-include { CHECK_SOMATIC_MNV_CALLS; FIND_SNP_POSITIONS; GENERATE_CONFIG_FILE; FILTER_AND_FLAG_VARIANTS } from "./modules/somatic_variants.nf"
-include { CATEGORISE_VARIANTS; PLOT_VARIANTS } from "./modules/visualise.nf"
+include { CHECK_SOMATIC_MNV_CALLS; FIND_SNP_POSITIONS} from "./modules/somatic_variants.nf"
+include { GENERATE_CONFIG_FILE; FILTER_AND_FLAG_VARIANTS } from "./modules/variant_filtering.nf"
+include { CATEGORISE_VARIANTS; PLOT_VARIANTS } from "./modules/categorise_variants.nf"
 
 def processVcfChannel(vcf_param, prefix) {
     def vcfs = Channel.fromPath(vcf_param, checkIfExists: true)
@@ -48,10 +49,6 @@ workflow {
     unmatched_vcfs_combined = unmatched_basenames.combine(unmatched_files_list)
     .merge(matched_files_list) { a,b -> tuple(a,b)}
     .map { files,list -> tuple(["analysis_type": "unmatched"], files,list) }
-    
-    // germline_vcfs_combined.view { "Germline combined: $it" }
-    // matched_vcfs_combined.view { "Matched combined: $it" }
-    // unmatched_vcfs_combined.view { "Unmatched combined: $it" }
     
     COUNT_NON_REF_GTS(germline_vcfs_combined)
     SUBSET_MATCHED(matched_vcfs_combined, file(params.transcripts))

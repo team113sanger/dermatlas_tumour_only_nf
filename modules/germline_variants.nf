@@ -12,5 +12,10 @@ process COUNT_NON_REF_GTS {
   """
   /opt/repo/count_nonref_gts.pl $file_list > germline_varcounts.tsv 2>germline_varcounts.log
   """
+
+  stub:
+  """
+  echo -e "stub" > germline_varcounts.tsv
+  """
 }
 
