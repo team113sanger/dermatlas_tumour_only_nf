@@ -30,7 +30,7 @@ def processVcfChannel(vcf_param, prefix) {
 
 workflow {
     
-    def (germline_basenames, germline_files_list, _) = processVcfChannel(params.germline_vcfs, 'germline')
+    def (germline_basenames, germline_files_list, _unused) = processVcfChannel(params.germline_vcfs, 'germline')
     def (matched_basenames, matched_files_list, matched_samples) = processVcfChannel(params.matched_somatic_vcfs, 'matched')
     def (unmatched_basenames, unmatched_files_list, unmatched_samples) = processVcfChannel(params.unmatched_somatic_vcfs, 'unmatched')
     
