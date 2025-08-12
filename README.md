@@ -45,15 +45,11 @@ nextflow run 'https://gitlab.internal.sanger.ac.uk/DERMATLAS/analysis-methods/th
 ```
 
 
-When running the pipeline for the first time on the farm you will need to provide credentials to pull singularity containers from the team113 sanger gitlab. These should be provided as environment variables:
-`SINGULARITY_DOCKER_USERNAME`=userid
-`SINGULARITY_DOCKER_PASSWORD`=YOUR_GITLAB_LOGIN_PASSWORD
+When running the pipeline for the first time on the farm you will need to provide credentials to pull singularity containers from the team113 sanger gitlab. You should be able to do this by running
 
-You can fix these variables to load by default by adding the following lines to your `~/.bashrc` file
-```
-export SINGULARITY_DOCKER_USERNAME=userid
-export SINGULARITY_DOCKER_PASSWORD=YOUR_GITLAB_LOGIN_PASSWORD
-```
+module load singularity/3.11.4 
+singularity remote login --username $(whoami) docker://gitlab-registry.internal.sanger.ac.uk
+
 
 The pipeline can configured to run on either Sanger OpenStack secure-lustre instances or farm22 by changing the profile speicified:
 `-profile secure_lustre` or `-profile farm22`. 
