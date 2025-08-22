@@ -38,38 +38,13 @@ In brief, the pipeline takes a cohort of tumour samples that have been pre-proce
 
 The recommended way to launch this pipeline is using a wrapper script (e.g. `bsub < my_wrapper.sh`) that submits nextflow as a job and records the version (**e.g.** `-r 0.1.1`)  and the `.json` parameter file supplied for a run.
 
-An example wrapper script:
-```
-#!/bin/bash
-#BSUB -q normal
-#BSUB -G team113-grp
-#BSUB -R "select[mem>8000] rusage[mem=8000] span[hosts=1]"
-#BSUB -M 8000
-#BSUB -oo nf_out.o
-#BSUB -eo nf_out.e
-
-PARAMS_FILE="/lustre/scratch125/casm/team113da/users/jb63/nf_germline_testing/params.json"
-
-# Load module dependencies
-module load nextflow-23.10.0
-module load /software/modules/ISG/singularity/3.11.4
-module load /software/team113/modules/modulefiles/tw/0.6.2
-
-# Create a nextflow job that will spawn other jobs
-
-nextflow run 'https://gitlab.internal.sanger.ac.uk/DERMATLAS/analysis-methods/this_pipeline' \
--r 0.1.1 \
--params-file $PARAMS_FILE \
--c nextflow.config \
--profile farm22 
-```
-
+An example wrapper script is included in the `assets` directory (`assets/run_tumour_only.sh`)
 
 When running the pipeline for the first time on the farm you will need to provide credentials to pull singularity containers from the team113 sanger gitlab. You should be able to do this by running
 
-module load singularity/3.11.4 
+```module load singularity/3.11.4 
 singularity remote login --username $(whoami) docker://gitlab-registry.internal.sanger.ac.uk
-
+```
 
 The pipeline can configured to run on either Sanger OpenStack secure-lustre instances or farm22 by changing the profile speicified:
 `-profile secure_lustre` or `-profile farm22`. 
