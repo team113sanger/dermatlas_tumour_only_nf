@@ -1,18 +1,38 @@
-# TBC 
+# dermatlas_tumour_only_calling_nf
 [![Nextflow](https://img.shields.io/badge/nextflow%20DSL2-%E2%89%A522.04.5-23aa62.svg?labelColor=000000)](https://www.nextflow.io/)
 [![run with docker](https://img.shields.io/badge/run%20with-docker-0db7ed?labelColor=000000&logo=docker)](https://www.docker.com/)
 [![run with singularity](https://img.shields.io/badge/run%20with-singularity-1d355c.svg?labelColor=000000)](https://sylabs.io/docs/)
 
 ## Introduction
 
-X is a bioinformatics pipeline written in [Nextflow](http://www.nextflow.io) for g
+`dermatlas_tumour_only_calling_nf` is a bioinformatics pipeline written in [Nextflow](http://www.nextflow.io) for identifying somatic variants from unmatched FFPE tumor samples within the Dermatlas project.
 
 ## Pipeline summary
 
-In brief, the pipeline takes
+In brief, the pipeline takes a cohort of tumour samples that have been pre-processed with `dermatlas_somatic_qc_nf` and
+
+- Collates variants from matched normal-tumour samples in the cohort creating a panel of normals (PON) for filtering recurrent technical artefacts and germline variants.
+- Annotates common SNPs from the unmatched tumour samples using dbSNP.
+- Counts germline variants in the matched normal samples for the cohort, so that they can be annotated in the unmatched tumour samples.
+- Validates MNV variant calls in the unmatched tumour samples.
+- Flags and filteres variants in the unmatched tumour samples using the PON, dbSNP and germline counts.
+- Annotates filtered variants in the unmatched tumour samples using a custom Dermatlas tiering system - which ranks variants based on their likely clinical significance and the strength of evidence supporting their veracity.
+- Generates summary plots and reports for the unmatched tumour samples.
 
 
 ## Inputs 
+
+- `germline_vcfs`: path to a list of germline VCFs from matched normal samples in the cohort (one VCF per line)
+- `unmatched_somatic_vcfs`: path to a list of somatic VCFs from unmatched tumour samples in the cohort (one VCF per line).
+- `matched_somatic_vcfs`: path to a list of somatic VCFs from unmatched tumour samples in the cohort (one VCF per line).
+- `unmatched_maf`: path to a MAF file collated from the unmatched tumour samples in the cohort generated using `dermatlas_somatic_qc_nf`.
+- `transcripts`:  path to a file containing Ensembl transcripts where we wish to modify the canonical transcript for accurate variant reporting.
+- `cgc_file`: path to a Cosmic Cancer Gene Census file for annotating variants
+- `oncokb_file`: path to an  Onkokb file for annotating variants
+- `hotspot_file`: path to a cancer hotspots file for annotating variants
+- `dbsnp_file`: dbSNP VCF file for annotating common SNPs and its index file
+- `release_version`: results release version (e.g. `1.0`)
+- `outdir`: path to the directory where results will be written
 
 ## Usage 
 
