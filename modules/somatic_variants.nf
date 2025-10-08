@@ -1,4 +1,3 @@
-
 process SUBSET_MAF {
     publishDir "${params.outdir}/${meta.analysis_type}_unfiltered", mode: 'copy', pattern: "*.maf"
     container "gitlab-registry.internal.sanger.ac.uk/dermatlas/analysis-methods/maf:latest"

@@ -1,4 +1,3 @@
-
 process COUNT_NON_REF_GTS {
   publishDir "${params.outdir}/germline_unfiltered", mode: 'copy', pattern: "*.tsv"
   container "gitlab-registry.internal.sanger.ac.uk/dermatlas/analysis-methods/var_filter"

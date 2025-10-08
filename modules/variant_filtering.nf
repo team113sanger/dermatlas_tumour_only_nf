@@ -1,5 +1,3 @@
-
-
 process GENERATE_CONFIG_FILE {
     publishDir "${params.outdir}/release_${params.release_version}", mode: 'copy', pattern: "*.R"
     
