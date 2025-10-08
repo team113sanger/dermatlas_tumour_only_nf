@@ -27,7 +27,7 @@ process SUBSET_MAF {
 
 process CHECK_SOMATIC_MNV_CALLS {
     container "gitlab-registry.internal.sanger.ac.uk/dermatlas/analysis-methods/var_filter"
-    publishDir "${params.outdir}/mnv_check", mode: 'copy', pattern: "*.maf"
+    publishDir "${params.outdir}/mnv_check", mode: 'copy', pattern: "*"
 
     input: 
     tuple val(meta), path(file_list), path(vcf_files)
