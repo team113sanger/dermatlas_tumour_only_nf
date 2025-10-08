@@ -1,6 +1,6 @@
 process SUBSET_MAF {
     publishDir "${params.outdir}/${meta.analysis_type}_unfiltered", mode: 'copy', pattern: "*.maf"
-    container "gitlab-registry.internal.sanger.ac.uk/dermatlas/analysis-methods/maf:latest"
+    container "gitlab-registry.internal.sanger.ac.uk/dermatlas/analysis-methods/maf:0.6.5"
     input: 
     tuple val(meta), path(file_list), path(vcf_files)
     path(transcripts)
