@@ -15,7 +15,7 @@ In brief, the pipeline takes a cohort of tumour samples that have been pre-proce
 - Annotates common SNPs from the unmatched tumour samples using dbSNP.
 - Counts germline variants in the matched normal samples for the cohort, so that they can be annotated in the unmatched tumour samples.
 - Validates MNV variant calls in the unmatched tumour samples.
-- Flags and filteres variants in the unmatched tumour samples using the PON, dbSNP and germline counts.
+- Flags and filters variants in the unmatched tumour samples using the PON, dbSNP and germline counts.
 - Annotates filtered variants in the unmatched tumour samples using a custom Dermatlas tiering system - which ranks variants based on their likely clinical significance and the strength of evidence supporting their veracity.
 - Generates summary plots and reports for the unmatched tumour samples.
 
