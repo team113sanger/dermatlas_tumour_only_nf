@@ -32,6 +32,7 @@ In brief, the pipeline takes a cohort of tumour samples that have been pre-proce
 - `hotspot_file`: path to a cancer hotspots file for annotating variants
 - `dbsnp_file`: dbSNP VCF file for annotating common SNPs and its index file
 - `release_version`: results release version (e.g. `1.0`)
+- `sample_list`: path to a file containing sample IDs to retain in MAF and plot outputs (one ID per line)
 - `outdir`: path to the directory where results will be written
 
 ## Usage 
