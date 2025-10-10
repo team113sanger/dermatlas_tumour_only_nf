@@ -90,9 +90,11 @@ workflow {
         }
     )
 
+    // Combine filtered_maf with each cohort_sample_set
+    maf_with_cohorts = FILTER_AND_FLAG_VARIANTS.out.filtered_maf.combine(cohort_sample_sets)
+
     CATEGORISE_VARIANTS(
-        FILTER_AND_FLAG_VARIANTS.out.filtered_maf,
-        cohort_sample_sets,
+        maf_with_cohorts,
         Channel.of(2,3,4,5,6,7,8,9,10)
     )
     PLOT_VARIANTS(

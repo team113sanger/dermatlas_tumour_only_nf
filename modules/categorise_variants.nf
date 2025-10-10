@@ -2,16 +2,13 @@ process CATEGORISE_VARIANTS {
     publishDir path: { "${params.outdir}/release_${params.release_version}/QC_keep/qc_tier${tier}_${cohort}" }, mode: 'copy', pattern: "*"
 
     input:
-    tuple val(meta), path(filtered_maf)
-    each cohort_set
+    tuple val(meta), path(filtered_maf), val(cohort), path(sample_list)
     each tier
 
     output:
     tuple val(meta), val(tier), val(cohort), path("${meta.sample_id}_unmatched_keep_annotated.tier${tier}.maf"), path(sample_list), emit: tier_maf
 
     script:
-    cohort = cohort_set[0]
-    sample_list = cohort_set[1]
     """
 
     # Find column numbers for Flagging_Tier and Tumor_Sample_Barcode
@@ -34,8 +31,6 @@ process CATEGORISE_VARIANTS {
     """
 
     stub:
-    cohort = cohort_set[0]
-    sample_list = cohort_set[1]
     """
     echo -e "Hugo_Symbol\tEntrez_Gene_Id\tCenter\tBarcode\tFlagging_Tier" > ${meta.sample_id}_unmatched_keep_annotated.tier${tier}.maf
     echo -e "TP53\t7157\ttest_center\tsample1\t${tier}" >> ${meta.sample_id}_unmatched_keep_annotated.tier${tier}.maf
