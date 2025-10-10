@@ -1,36 +1,48 @@
 process CATEGORISE_VARIANTS {
-    publishDir "${params.outdir}/release_${params.release_version}/QC_keep/qc_tier${tier}", mode: 'copy', pattern: "*"
+    publishDir path: { "${params.outdir}/release_${params.release_version}/QC_keep/qc_tier${tier}_${cohort}" }, mode: 'copy', pattern: "*.maf"
 
-    input: 
-    tuple val(meta), path(filtered_maf)
-    each(tier)
+    input:
+    tuple val(meta), path(filtered_maf), val(cohort), path(sample_list)
+    each tier
 
     output:
-    tuple val(meta), val(tier), path("${meta.sample_id}_unmatched_keep_annotated.tier${tier}.maf"), emit: tier_maf
+    tuple val(meta), val(tier), val(cohort), path("${cohort}_unmatched_keep_annotated.tier${tier}.maf"), path(sample_list), emit: tier_maf
 
     script:
     """
 
-    # Find column number for Flagging_Tier
-    colnum=\$(head -n1 ${filtered_maf} | awk -v RS='\t' '/Flagging_Tier/{print NR; exit}')
+    # Find column numbers for Flagging_Tier and Tumor_Sample_Barcode
+    tier_col=\$(head -n1 ${filtered_maf} | awk -v RS='\t' '/Flagging_Tier/{print NR; exit}')
+    sample_col=\$(head -n1 ${filtered_maf} | awk -v RS='\t' '/Tumor_Sample_Barcode/{print NR; exit}')
 
-    # Filter MAF file based on tier
-    cat ${filtered_maf} | awk -v col=\$colnum -v tier=${tier} 'BEGIN{OFS=IFS="\t"}{if(/Hugo/ || \$col >= tier){print}}' > "${meta.sample_id}_unmatched_keep_annotated.tier${tier}.maf"
+    # Filter MAF file based on tier and sample list
+    awk -v tier_col=\$tier_col -v sample_col=\$sample_col -v tier=${tier} '
+        BEGIN {
+            OFS=IFS="\t"
+            # Load sample list into associative array
+            while ((getline < "${sample_list}") > 0) {
+                samples[\$1] = 1
+            }
+            close("${sample_list}")
+        }
+        # Keep header line or rows that match tier and are in sample list
+        /^Hugo/ || (\$tier_col >= tier && \$sample_col in samples)
+    ' ${filtered_maf} > "${cohort}_unmatched_keep_annotated.tier${tier}.maf"
     """
 
     stub:
     """
-    echo -e "Hugo_Symbol\tEntrez_Gene_Id\tCenter\tBarcode\tFlagging_Tier" > ${meta.sample_id}_unmatched_keep_annotated.tier${tier}.maf
-    echo -e "TP53\t7157\ttest_center\tsample1\t${tier}" >> ${meta.sample_id}_unmatched_keep_annotated.tier${tier}.maf
+    echo -e "Hugo_Symbol\tEntrez_Gene_Id\tCenter\tBarcode\tFlagging_Tier" > ${cohort}_unmatched_keep_annotated.tier${tier}.maf
+    echo -e "TP53\t7157\ttest_center\tsample1\t${tier}" >> ${cohort}_unmatched_keep_annotated.tier${tier}.maf
     """
 }
 
 process PLOT_VARIANTS {
     container "gitlab-registry.internal.sanger.ac.uk/dermatlas/analysis-methods/maf"
-    publishDir "${params.outdir}/release_${params.release_version}/QC_keep/qc_tier${tier}", mode: 'copy', pattern: "*"
+    publishDir path: { "${params.outdir}/release_${params.release_version}/QC_keep/qc_tier${tier}_${cohort}" }, mode: 'copy', pattern: "*"
 
     input:
-    tuple val(meta), val(tier), path(tier_maf), path(sample_list)
+    tuple val(meta), val(tier), val(cohort), path(tier_maf), path(sample_list)
 
     output:
     path("*"), emit: plots
