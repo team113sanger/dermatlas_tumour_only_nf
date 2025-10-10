@@ -1,15 +1,17 @@
 process CATEGORISE_VARIANTS {
-    publishDir "${params.outdir}/release_${params.release_version}/QC_keep/qc_tier${tier}", mode: 'copy', pattern: "*"
+    publishDir path: { "${params.outdir}/release_${params.release_version}/QC_keep/qc_tier${tier}_${cohort}" }, mode: 'copy', pattern: "*"
 
     input:
     tuple val(meta), path(filtered_maf)
-    path(sample_list)
-    each(tier)
+    each cohort_set
+    each tier
 
     output:
-    tuple val(meta), val(tier), path("${meta.sample_id}_unmatched_keep_annotated.tier${tier}.maf"), emit: tier_maf
+    tuple val(meta), val(tier), val(cohort), path("${meta.sample_id}_unmatched_keep_annotated.tier${tier}.maf"), path(sample_list), emit: tier_maf
 
     script:
+    cohort = cohort_set[0]
+    sample_list = cohort_set[1]
     """
 
     # Find column numbers for Flagging_Tier and Tumor_Sample_Barcode
@@ -32,6 +34,8 @@ process CATEGORISE_VARIANTS {
     """
 
     stub:
+    cohort = cohort_set[0]
+    sample_list = cohort_set[1]
     """
     echo -e "Hugo_Symbol\tEntrez_Gene_Id\tCenter\tBarcode\tFlagging_Tier" > ${meta.sample_id}_unmatched_keep_annotated.tier${tier}.maf
     echo -e "TP53\t7157\ttest_center\tsample1\t${tier}" >> ${meta.sample_id}_unmatched_keep_annotated.tier${tier}.maf
@@ -40,10 +44,10 @@ process CATEGORISE_VARIANTS {
 
 process PLOT_VARIANTS {
     container "gitlab-registry.internal.sanger.ac.uk/dermatlas/analysis-methods/maf"
-    publishDir "${params.outdir}/release_${params.release_version}/QC_keep/qc_tier${tier}", mode: 'copy', pattern: "*"
+    publishDir path: { "${params.outdir}/release_${params.release_version}/QC_keep/qc_tier${tier}_${cohort}" }, mode: 'copy', pattern: "*"
 
     input:
-    tuple val(meta), val(tier), path(tier_maf), path(sample_list)
+    tuple val(meta), val(tier), val(cohort), path(tier_maf), path(sample_list)
 
     output:
     path("*"), emit: plots

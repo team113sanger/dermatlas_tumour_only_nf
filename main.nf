@@ -82,14 +82,21 @@ workflow {
         params.hotspot_file,
         GENERATE_CONFIG_FILE.out.config
     )
-    sample_sets = Channel.fromPath(params.sample_list)
+    // Create channel of cohort-sample_list tuples
+    // params.cohorts should be a map like: ["cohort1": "/path/to/list1.tsv", "cohort2": "/path/to/list2.tsv"]
+    cohort_sample_sets = Channel.fromList(
+        params.cohorts.collect { cohort, sample_list ->
+            tuple(cohort, file(sample_list))
+        }
+    )
+
     CATEGORISE_VARIANTS(
         FILTER_AND_FLAG_VARIANTS.out.filtered_maf,
-        sample_sets,
+        cohort_sample_sets,
         Channel.of(2,3,4,5,6,7,8,9,10)
     )
     PLOT_VARIANTS(
-        CATEGORISE_VARIANTS.out.tier_maf.combine(sample_sets)
+        CATEGORISE_VARIANTS.out.tier_maf
     )
 
 
