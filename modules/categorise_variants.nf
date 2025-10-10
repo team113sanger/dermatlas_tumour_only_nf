@@ -1,12 +1,12 @@
 process CATEGORISE_VARIANTS {
-    publishDir path: { "${params.outdir}/release_${params.release_version}/QC_keep/qc_tier${tier}_${cohort}" }, mode: 'copy', pattern: "*"
+    publishDir path: { "${params.outdir}/release_${params.release_version}/QC_keep/qc_tier${tier}_${cohort}" }, mode: 'copy', pattern: "*.maf"
 
     input:
     tuple val(meta), path(filtered_maf), val(cohort), path(sample_list)
     each tier
 
     output:
-    tuple val(meta), val(tier), val(cohort), path("${meta.sample_id}_unmatched_keep_annotated.tier${tier}.maf"), path(sample_list), emit: tier_maf
+    tuple val(meta), val(tier), val(cohort), path("${cohort}_unmatched_keep_annotated.tier${tier}.maf"), path(sample_list), emit: tier_maf
 
     script:
     """
@@ -27,13 +27,13 @@ process CATEGORISE_VARIANTS {
         }
         # Keep header line or rows that match tier and are in sample list
         /^Hugo/ || (\$tier_col >= tier && \$sample_col in samples)
-    ' ${filtered_maf} > "${meta.sample_id}_unmatched_keep_annotated.tier${tier}.maf"
+    ' ${filtered_maf} > "${cohort}_unmatched_keep_annotated.tier${tier}.maf"
     """
 
     stub:
     """
-    echo -e "Hugo_Symbol\tEntrez_Gene_Id\tCenter\tBarcode\tFlagging_Tier" > ${meta.sample_id}_unmatched_keep_annotated.tier${tier}.maf
-    echo -e "TP53\t7157\ttest_center\tsample1\t${tier}" >> ${meta.sample_id}_unmatched_keep_annotated.tier${tier}.maf
+    echo -e "Hugo_Symbol\tEntrez_Gene_Id\tCenter\tBarcode\tFlagging_Tier" > ${cohort}_unmatched_keep_annotated.tier${tier}.maf
+    echo -e "TP53\t7157\ttest_center\tsample1\t${tier}" >> ${cohort}_unmatched_keep_annotated.tier${tier}.maf
     """
 }
 

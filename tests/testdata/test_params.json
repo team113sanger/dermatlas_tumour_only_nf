@@ -9,8 +9,9 @@
     "hotspot_file": "s3://t113-test-artefacts/nf-test/tumor_only/resources/cancerhotspots_metadata.GRCh38.tsv",
     "dbsnp_file": "s3://t113-test-artefacts/nf-test/tumor_only/dbSNP155.GRCh38.GCF_000001405.39_AFS.WES5.tsv.gz{,.tbi}",
     "release_version": "v1",
+    "outdir": "results",
     "cohorts": {
-        "DEMO": "${baseDir}/tests/testdata/sample_list.tsv",
-        "DEMO_2": "${baseDir}/tests/testdata/sample_list.tsv"
+        "HIDRADENOMA": "${baseDir}/tests/testdata/sample_list.tsv",
+        "HIDRADENOCARCINOMA": "${baseDir}/tests/testdata/sample_list.tsv"
     }
 }
