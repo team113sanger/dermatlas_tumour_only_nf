@@ -47,8 +47,8 @@ The Nextflow pipeline requires several input files to be prepared beforehand. Th
 **Prerequisites**
 
 The variant call files used as inputs are generated when following the SOPs for somatic and germline variant calling:
-- [Nextflow: Somatic variant calling pipeline](https://confluence.sanger.ac.uk/x/somatic_pipeline) or DERMATLAS - Post-processing CaVEMan and Pindel calls
-- [Nextflow: Germline variant calling pipeline](../dermatlas_germlinepost_nf/user_docs/analysis_sop.md) or DERMATLAS - Germline calling with GATK for WES
+- [Nextflow: Somatic variant calling pipeline](TBC) or DERMATLAS - Post-processing CaVEMan and Pindel calls
+- [Nextflow: Germline variant calling pipeline](TBC) or DERMATLAS - Germline calling with GATK for WES
 :::
 
 #### Setup working directory
