@@ -1,5 +1,6 @@
 stages:
   - test
+  - deploy
 
 include:
   # DOCS: https://gitlab.internal.sanger.ac.uk/team113sanger/common/cicd-template/-/blob/develop/README.md
@@ -70,3 +71,26 @@ secure-lustre-test:
     # MAIN
     #
     - nf-test test --verbose
+
+# Cache pip dependencies
+cache:
+  paths:
+    - .cache/pip
+    - venv/
+
+# Variables
+variables:
+  PIP_CACHE_DIR: "$CI_PROJECT_DIR/.cache/pip"
+
+# Deploy documentation
+pages:
+  stage: deploy
+  image: python:3.12
+  script:
+    - cd docs
+    - pip install -r source/requirements.txt
+    - make html
+    - cd ..
+    - mv docs/build/html public
+  pages:
+    publish: public
