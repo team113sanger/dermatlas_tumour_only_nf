@@ -1,20 +1,14 @@
 # Nextflow: Tumour-Only Variant Filtering Pipeline
 
-Variant call filtering and annotation for unmatched tumour samples in DERMATLAS can be run with a Nextflow pipeline in a largely "set-and-forget" manner. This document contains an SOP for configuring and running the pipeline. For a more detailed explanation of the pipeline, inputs, steps and requirements can be found within the pipeline project [README](https://gitlab.internal.sanger.ac.uk/DERMATLAS/analysis-methods/dermatlas_tumour_only_calling_nf/-/blob/develop/README.md?ref_type=heads)
+Variant call filtering and annotation for unmatched tumour samples in DERMATLAS can be run with a Nextflow pipeline in a largely "set-and-forget" manner. This document contains an SOP for configuring and running the pipeline, which replicates the [steps detailed in the manual process](https://confluence.sanger.ac.uk/spaces/CAS/pages/156434665/DERMATLAS+Unmatched+tumour+variant+call+filtering). For a more detailed explanation of the pipeline, inputs, steps and requirements can be found within the pipeline project [README](https://gitlab.internal.sanger.ac.uk/DERMATLAS/analysis-methods/dermatlas_tumour_only_calling_nf/-/blob/develop/README.md?ref_type=heads)
 
 ## Purpose
 
-In DERMATLAS we have collected some samples that do not have matched normal tissue, or, the matched normal sample was collected but failed sequencing or QC requirements. Variant calling is then performed using the tumour BAM and an in silico BAM for CaVEMan and Pindel. As such, the variant calls from unmatched tumour samples will have germline variants and artefacts that would normally be filtered out when using a matched normal BAM.
+In DERMATLAS we have collected many samples that do not have matched normal tissue, or, the matched normal sample was collected but failed sequencing or QC requirements. We therefore perfom variant calling using the tumour BAM and an *in-silico* BAM for CaVEMan and Pindel. As such, the variant calls from unmatched tumour samples will have germline variants and artefacts that would normally be filtered out when using a matched normal BAM. Additionally since our samples are obtained from FFPE tissue, the starting DNA tends to be degraded, and can have abundant C>T artefacts. 
 
-As our samples are obtained from FFPE tissue, the starting DNA tends to be degraded, and can have C>T artefacts, and algorithms designed to filter out germline variants based on VAF/copy number, for example, do not work well. Instead, we have derived a tiered filtering-based method to exclude germline variants and artefacts and identify somatic variants with varying degrees of confidence, with an emphasis on identifying variants that may be driver mutations.
+Because of these issues we have deverlop a tiered filtering-based method that attempts to exclude germline variants and artefacts by sharing info across the cohort. We then identify somatic variants with varying degrees of confidence, with an emphasis on identifying variants that may be driver mutations.
 
-For this, the pipeline uses resources such as:
-- Cancer Hotspots
-- ClinVar
-- COSMIC
-- OncoKB
-- SIFT and Polyphen scores
-- dbSNP
+For this, the pipeline uses resources from Cancer Hotspots, ClinVar, COSMIC, OncoKB, dbSNP to weight the likelihood that a variant is genuine.
 
 When identifying germline variants and artefacts, we leverage any available (unfiltered, flagged) germline variant calls from the entire cohort, and unfiltered (but flagged) somatic variants (matched and unmatched tumours). The aim of using the unfiltered variants is to identify those that may have passed QC in the unmatched tumour, but failed QC in several other samples, which is an indication that the variant is likely an artefact or a germline variant.
 
@@ -53,12 +47,12 @@ The variant call files used as inputs are generated when following the SOPs for 
 
 #### Setup working directory
 
-First, set up your working directory and define key variables:
+Typically, we perform this analysis on a multi-cohort or PU level. To do run for a PU, first, set up your working directory as the top level PU directory and define key variables:
 
 ```bash
 # Set your PU number and PUDIR path
-pu=7
-PUDIR=/lustre/scratch127/casm/projects/dermatlas/projects/dermatlas_pu${pu}_project_dir/
+PU=7
+PUDIR=/lustre/scratch127/casm/projects/dermatlas/projects/dermatlas_pu${PU}_project_dir/
 cd ${PUDIR}
 
 # Your release number
@@ -71,7 +65,7 @@ cd ${PUDIR}/analysis/unmatched/release_v${i}
 
 #### 1.1 Create germline VCF file list
 
-Create a file containing the full paths to unfiltered germline VCF files (GATK format) from matched normal samples across all cohorts. These VCFs will be processed by the pipeline to count non-reference genotypes for flagging germline variants.
+Create a file containing the full paths to unfiltered germline VCF files from matched normal samples across all cohorts. These VCFs will be processed by the pipeline to count non-reference genotypes for flagging germline variants.
 
 ```bash
 # Working directory
@@ -94,13 +88,9 @@ done > germline_variant_files.tsv
 
 #### 1.2 Create somatic VCF file lists
 
-Create file lists for both matched and unmatched tumour somatic variant calls. The pipeline will use these to create a panel of normals (PON) for filtering artefacts and germline variants.
+Create file lists for both matched and unmatched tumour somatic variant calls. The pipeline will use these to create references for filtering artefacts and germline variants.
 
 The `*smartphase.vep.vcf.gz` (CaVEMan SNVs) and `*pindel.vep.vcf.gz` (Pindel indels) files are used.
-
-:::{note}
-Be sure to exclude any samples on your 'reject' or 'samples_to_exclude' list.
-:::
 
 ```bash
 # Working directory
@@ -131,7 +121,7 @@ done > unmatched_somatic_vcfs.tsv
 
 #### 1.3 Generate the input MAF file
 
-Variant calls for the unmatched tumours are in the all_samples subdirectory in each cohort's variants release directory. Because the files contain calls from matched and unmatched tumours, we need to parse out the variants from the unmatched samples.
+Variant calls for the unmatched tumours are in the `all_samples` subdirectory in each cohort's variants **release** directory. Because the files contain calls from matched and unmatched tumours, we need to parse out the variants from the unmatched samples.
 
 The files used are from your somatic variant release, which should have been generated from your CaVEMan/Pindel analysis.
 
@@ -140,7 +130,7 @@ The files used are from your somatic variant release, which should have been gen
 cd ${PUDIR}/analysis/unmatched/release_v${i}
 
 # Define the somatic variant release version to use
-varrel=4
+varrel=1
 
 # Copy the MAF header from the first cohort
 for f in `cat studies.list | head -n1`; do
@@ -159,15 +149,12 @@ for f in `cat studies.list`; do
 done >> combined_cohorts_keep_unmatched.maf
 ```
 
-:::{note}
-You may not have an 'all_tumours' directory for every cohort; in which case use the 'independent_tumours' or 'one_tumour_per_patient' data instead for those cohorts.
-:::
 
 ### 2. Generating the pipeline config file
 
 The Nextflow pipeline's config file encodes all of the input files and options to pass to the pipeline. An example configuration file is provided in the pipeline repository at `assets/tumour_only.config`.
 
-For most pipeline runs there are only **7 key parameters** that you need to specify:
+For most pipeline runs there are **7 parameters** that you need to specify:
 
 | Parameter | Description | Example |
 |:----------|:-----------|:--------|
@@ -198,9 +185,9 @@ params {
     // Define cohorts with their sample lists for QC plotting
     // Each cohort name will be used as a subdirectory in the output
     cohorts = [
-        "all_samples": "${PROJECT_DIR}/metadata/all_unmatched_samples.tsv",
+        "cohort1": "${PROJECT_DIR}/metadata/cohort1_samples.tsv",
         // Add more cohorts as needed:
-        // "cohort1": "${PROJECT_DIR}/metadata/cohort1_samples.tsv",
+        // "cohort2": "${PROJECT_DIR}/metadata/cohort1_samples.tsv",
     ]
 }
 ```
@@ -234,7 +221,7 @@ module load /software/modules/ISG/singularity/3.11.4
 
 # Set variables
 REVISION="0.1.0"  # Use the latest version
-CONFIG="${PROJECT_DIR}/analysis/unmatched/tumour_only.config"
+CONFIG="${PROJECT_DIR}/commands/tumour_only.config"
 
 # Run the pipeline
 nextflow run "https://gitlab.internal.sanger.ac.uk/DERMATLAS/analysis-methods/dermatlas_tumour_only_calling_nf" \
@@ -247,7 +234,6 @@ nextflow run "https://gitlab.internal.sanger.ac.uk/DERMATLAS/analysis-methods/de
 Submit the job:
 
 ```bash
-cd ${PUDIR}/analysis/unmatched/release_v${i}
 bsub -e logs/tumour_only.e -o logs/tumour_only.o < run_tumour_only.sh
 ```
 
@@ -328,7 +314,6 @@ An explanation of the flagging tier system can be found in DERMATLAS_tumour-only
 - **Tiers 8-10**: High confidence somatic variants
 - **Tiers 5-7**: Moderate confidence
 - **Tiers 2-4**: Lower confidence, may include artefacts
-- **Tier 1**: Likely germline or artefacts (excluded from most analyses)
 :::
 
 **QC Plots:**
