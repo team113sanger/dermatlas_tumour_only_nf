@@ -1,5 +1,6 @@
 stages:
-  - test
+  # - test
+  - deploy
 
 include:
   # DOCS: https://gitlab.internal.sanger.ac.uk/team113sanger/common/cicd-template/-/blob/develop/README.md
@@ -43,30 +44,53 @@ include:
 ############
 #   JOBS   #
 ############
-secure-lustre-test:
-  stage: test
-  extends:
-    - .generic-wo-script-or-rules-or-tags
-    - .specific-tags__secure_lustre_runner
-    - .specific-variables
-    - .component-rules-except-release
-  script:
-    #
-    # DEBUG INFO ONLY
-    #
-    - echo "PATH=$PATH"
-    - which $SHELL
-    - java -version
-    - javac -version
-    - nextflow -version
-    - nf-test version
-    - which java
-    - which javac
-    - which nextflow
-    - which nf-test
-    - echo "WORK_DIR=$PWD"
+# secure-lustre-test:
+#   stage: test
+#   extends:
+#     - .generic-wo-script-or-rules-or-tags
+#     - .specific-tags__secure_lustre_runner
+#     - .specific-variables
+#     - .component-rules-except-release
+#   script:
+#     #
+#     # DEBUG INFO ONLY
+#     #
+#     - echo "PATH=$PATH"
+#     - which $SHELL
+#     - java -version
+#     - javac -version
+#     - nextflow -version
+#     - nf-test version
+#     - which java
+#     - which javac
+#     - which nextflow
+#     - which nf-test
+#     - echo "WORK_DIR=$PWD"
 
-    #
-    # MAIN
-    #
-    - nf-test test --verbose
+#     #
+#     # MAIN
+#     #
+#     - nf-test test --verbose
+
+# Cache pip dependencies
+cache:
+  paths:
+    - .cache/pip
+    - venv/
+
+# Variables
+variables:
+  PIP_CACHE_DIR: "$CI_PROJECT_DIR/.cache/pip"
+
+# Deploy documentation
+pages:
+  stage: deploy
+  image: python:3.12
+  script:
+    - cd docs
+    - pip install -r source/requirements.txt
+    - make html
+    - cd ..
+    - mv docs/build/html public
+  pages:
+    publish: public
