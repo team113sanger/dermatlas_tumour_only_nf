@@ -2,11 +2,11 @@
 
 Variant call filtering and annotation for unmatched tumour samples in DERMATLAS can be run with a Nextflow pipeline in a largely "set-and-forget" manner. This document contains an SOP for configuring and running the pipeline, which replicates the [steps detailed in the manual process](https://confluence.sanger.ac.uk/spaces/CAS/pages/156434665/DERMATLAS+Unmatched+tumour+variant+call+filtering). For a more detailed explanation of the pipeline, inputs, steps and requirements can be found within the pipeline project [README](https://gitlab.internal.sanger.ac.uk/DERMATLAS/analysis-methods/dermatlas_tumour_only_calling_nf/-/blob/develop/README.md?ref_type=heads)
 
-## Purpose
+## Purpose (Mirrored from [manual](https://confluence.sanger.ac.uk/spaces/CAS/pages/156434665/DERMATLAS+Unmatched+tumour+variant+call+filtering))
+ 
+In DERMATLAS we have collected many samples that do not have matched normal tissue, or, the matched normal sample was collected but failed sequencing or QC requirements. We therefore perform variant calling using the tumour BAM and an *in-silico* BAM for CaVEMan and Pindel. As such, the variant calls from unmatched tumour samples will have germline variants and artefacts that would normally be filtered out when using a matched normal BAM. Additionally since our samples are obtained from FFPE tissue, the starting DNA tends to be degraded, and can have abundant C>T artefacts. 
 
-In DERMATLAS we have collected many samples that do not have matched normal tissue, or, the matched normal sample was collected but failed sequencing or QC requirements. We therefore perfom variant calling using the tumour BAM and an *in-silico* BAM for CaVEMan and Pindel. As such, the variant calls from unmatched tumour samples will have germline variants and artefacts that would normally be filtered out when using a matched normal BAM. Additionally since our samples are obtained from FFPE tissue, the starting DNA tends to be degraded, and can have abundant C>T artefacts. 
-
-Because of these issues we have deverlop a tiered filtering-based method that attempts to exclude germline variants and artefacts by sharing info across the cohort. We then identify somatic variants with varying degrees of confidence, with an emphasis on identifying variants that may be driver mutations.
+Because of these issues we have developed a tiered filtering-based method that attempts to exclude germline variants and artefacts by sharing info across the cohort. We then identify somatic variants with varying degrees of confidence, with an emphasis on identifying variants that may be driver mutations.
 
 For this, the pipeline uses resources from Cancer Hotspots, ClinVar, COSMIC, OncoKB, dbSNP to weight the likelihood that a variant is genuine.
 
@@ -18,7 +18,7 @@ When identifying germline variants and artefacts, we leverage any available (unf
 Estimates of tumour mutation rate using unmatched tumours are unlikely to give an accurate result.
 :::
 
-For further details, see DERMATLAS_tumour-only_filtering-070725-kw10.pdf
+For further details on the filtering rationale see [DERMATLAS_tumour-only_filtering-070725-kw10.pdf](https://drive.google.com/file/d/1n1cf2WudFrU4NlMw_XD9lWYVomk-DUMR/view)
 
 ## Workflow Overview
 
@@ -41,8 +41,8 @@ The Nextflow pipeline requires several input files to be prepared beforehand. Th
 **Prerequisites**
 
 The variant call files used as inputs are generated when following the SOPs for somatic and germline variant calling:
-- [Nextflow: Somatic variant calling pipeline](TBC) or DERMATLAS - Post-processing CaVEMan and Pindel calls
-- [Nextflow: Germline variant calling pipeline](TBC) or DERMATLAS - Germline calling with GATK for WES
+- [Nextflow: Somatic variant calling pipeline](https://confluence.sanger.ac.uk/spaces/CAS/pages/150209099/Nextflow+Somatic+variant+calling+pipeline) or DERMATLAS - Post-processing CaVEMan and Pindel calls
+- [Nextflow: Germline variant calling pipeline](https://dermatlas-germlinepost-nf-dermatlas-analysis-met-51a10bf1e7a767.pages.internal.sanger.ac.uk) or DERMATLAS - Germline calling with GATK for WES
 :::
 
 #### Setup working directory
@@ -181,6 +181,13 @@ params {
     // Release information
     release_version = "v1"
     outdir = "${PROJECT_DIR}/analysis/unmatched_variant_calling/release_v${i}"
+
+    transcripts = "/lustre/scratch127/casm/projects/dermatlas/resources/ensembl/dermatlas_noncanonical_transcripts_ens103.v2.tsv"
+    cgc_file = "/lustre/scratch127/casm/projects/dermatlas/resources/tumour-only/cgc_genes.list"
+    oncokb_file = "/lustre/scratch127/casm/projects/dermatlas/resources/oncokb/cancerGeneList.list"
+    hotspot_file = "/lustre/scratch127/casm/projects/dermatlas/resources/tumour-only/cancerhotspots_metadata.GRCh38.v2.tsv"
+    dbsnp_file = "/lustre/scratch127/casm/projects/dermatlas/resources/tumour-only/dbSNP155.GRCh38.GCF_000001405.39_AFS.WES5.tsv.gz{,.tbi}"
+    transcript_info = "/lustre/scratch127/casm/projects/dermatlas/resources/ensembl/Homo_sapiens.GRCh38.103.chr.gtf.gz"
 
     // Define cohorts with their sample lists for QC plotting
     // Each cohort name will be used as a subdirectory in the output

@@ -11,6 +11,7 @@ process GENERATE_CONFIG_FILE {
     path(cgc_file)
     path(oncokb_file)
     path(hotspot_file)
+    path(transcript_info)
 
     output:
     path("config.R"), emit: config
@@ -37,6 +38,7 @@ process GENERATE_CONFIG_FILE {
     germline_file <- "${varcounts}"
     snp_file <- "${dbsnp_positions}"
     mnv_file <- "${mnv_check}"
+    gtf_file <- "${transcript_info}"
     EOF
     """
 
@@ -47,7 +49,7 @@ process GENERATE_CONFIG_FILE {
 }
 
 process FILTER_AND_FLAG_VARIANTS {
-    container "gitlab-registry.internal.sanger.ac.uk/dermatlas/analysis-methods/var_filter"
+    container "gitlab-registry.internal.sanger.ac.uk/dermatlas/analysis-methods/var_filter/feature/build_fix:35703fcc"
     publishDir "${params.outdir}/release_${params.release_version}/filtered/combined", mode: 'copy', pattern: "*.maf"
     publishDir "${params.outdir}/release_${params.release_version}/intermediate_files", mode: 'copy', pattern: "intermediate_files/*"
 
@@ -61,7 +63,9 @@ process FILTER_AND_FLAG_VARIANTS {
     path(cgc_file)
     path(oncokb_file)
     path(hotspot_file)
+    path(transcript_info)
     path(config_file)
+    
 
     output:
     tuple val(meta), path("${meta.sample_id}.annotated.maf"), emit: filtered_maf

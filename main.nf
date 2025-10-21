@@ -67,7 +67,8 @@ workflow {
         SUBSET_UNMATCHED.out.maf,
         file(params.cgc_file),
         file(params.oncokb_file),
-        file(params.hotspot_file)
+        file(params.hotspot_file),
+        file(params.transcript_info)
     )
 
     FILTER_AND_FLAG_VARIANTS(
@@ -80,6 +81,7 @@ workflow {
         params.cgc_file,
         params.oncokb_file,
         params.hotspot_file,
+        params.transcript_info,
         GENERATE_CONFIG_FILE.out.config
     )
     // Create channel of cohort-sample_list tuples
