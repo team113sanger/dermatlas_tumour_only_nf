@@ -1,0 +1,96 @@
+stages:
+  # - test
+  - deploy
+
+include:
+  # DOCS: https://gitlab.internal.sanger.ac.uk/team113sanger/common/cicd-template/-/blob/develop/README.md
+  - project: "team113sanger/common/cicd-template"
+    ref: 0.3.4
+    file: ".gitlab-ci-components.yml"
+
+
+
+#############
+# TEMPLATES #
+#############
+
+.generic-wo-script-or-rules-or-tags:
+  extends:
+    - .component-variables
+    - .component-before_script
+    - .component-after_script
+
+.specific-variables:
+  variables:
+    USE_DOCKER_TARGET_STAGE: 0
+    DOCKER_TARGET_STAGE: base_stage
+    # We need to set this to 1 to enable BuildKit as the Dockerfile uses BuildKit features to speed up the build
+    DOCKER_BUILDKIT: 0
+    # Incase 'docker compose' build is ever used we want to ensure the image
+    # does not have sudo. By default CICD jobs do not build with 'docker
+    # compose' but use 'docker' - so this is just a safety measure.
+    HAS_SUDO: 0
+    NEXTFLOW_DIR: ".nextflow"
+    NF_TEST_DIR: ".nf-test"
+    FILES_TO_CLEANUP: "NEXTFLOW_DIR;NF_TEST_DIR;"
+
+.specific-tags__secure_lustre_runner:
+  variables:
+    # Custom runner is a shell runner with the following tags
+    USE_DOCKER_IN_DOCKER: 0
+  tags:
+    - team113-secure-lustre-runner
+
+############
+#   JOBS   #
+############
+# secure-lustre-test:
+#   stage: test
+#   extends:
+#     - .generic-wo-script-or-rules-or-tags
+#     - .specific-tags__secure_lustre_runner
+#     - .specific-variables
+#     - .component-rules-except-release
+#   script:
+#     #
+#     # DEBUG INFO ONLY
+#     #
+#     - echo "PATH=$PATH"
+#     - which $SHELL
+#     - java -version
+#     - javac -version
+#     - nextflow -version
+#     - nf-test version
+#     - which java
+#     - which javac
+#     - which nextflow
+#     - which nf-test
+#     - echo "WORK_DIR=$PWD"
+
+#     #
+#     # MAIN
+#     #
+#     - nf-test test --verbose
+
+# Cache pip dependencies
+cache:
+  paths:
+    - .cache/pip
+    - venv/
+
+# Variables
+variables:
+  PIP_CACHE_DIR: "$CI_PROJECT_DIR/.cache/pip"
+
+# Deploy documentation
+pages:
+  stage: deploy
+  image: python:3.12
+  script:
+    - cd docs
+    - pip install -r source/requirements.txt
+    - make html
+    - cd ..
+    - mv docs/build/html public
+  pages:
+    publish: public

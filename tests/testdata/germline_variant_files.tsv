@@ -1,0 +1,2 @@
+s3://t113-test-artefacts/nf-test/tumor_only/germline_calls/7347_cohort_indel_raw.marked.vcf.gz
+s3://t113-test-artefacts/nf-test/tumor_only/germline_calls/7347_cohort_raw_snps.marked.vcf.gz
