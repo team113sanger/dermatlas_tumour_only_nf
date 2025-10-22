@@ -9,7 +9,7 @@
 module load nextflow-23.10.0
 module load /software/modules/ISG/singularity/3.11.4
 
-REVISION="develop"
+REVISION="0.2.0"
 CONFIG="${PROJECT_DIR}/commands/tumour_only.config"
 
 # Create a nextflow job that will spawn other jobs
