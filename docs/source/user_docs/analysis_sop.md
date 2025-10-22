@@ -78,8 +78,8 @@ ls -1 $PUDIR | grep WES > studies.list
 
 # Generate the germline VCF list
 for f in `cat studies.list`; do
-  ls $PUDIR/$f/analysis/germline/vcf/Final_joint_call/*.marked.vcf.gz
-done > germline_variant_files.tsv
+  dir $PUDIR/$f/analysis/germline/vcf/Final_joint_call/*.marked.vcf.gz
+done > germline_unfiltered/germline_vcfs.list
 
 # Your germline_variant_files.tsv should have the full path to files
 # for snps (eg. 6937_cohort_snp.marked.vcf.gz) and another
@@ -99,24 +99,20 @@ cd ${PUDIR}/analysis/unmatched/release_v${i}
 # Matched tumour VCF list
 for f in `cat studies.list`; do
   for g in ${PUDIR}/$f/metadata/*one_tumour_per_patient_matched_tum.txt; do
-    # Exclude rejected samples
-    grep -vf ${PUDIR}/${f}/metadata/rejected_DNA_samples.list $g | while read sample; do
-      ls ${PUDIR}/$f/analysis/caveman_files/*/*smartphase.vep.vcf.gz \
-         ${PUDIR}/$f/analysis/pindel_files/*/*pindel.vep.vcf.gz 2>/dev/null | grep "$sample"
-    done
+    cat $g | grep -v ${PUDIR}/${f}/metadata/rejected_DNA_samples.list > matched_unfiltered/${f}-samples.list
+    dir ${PUDIR}/$f/analysis/caveman_files/*/*smartphase.vep.vcf.gz $PUDIR/$f/analysis/pindel_files/*/*pindel.vep.vcf.gz |
+      grep -f matched_unfiltered/${f}-samples.list
   done
-done > matched_somatic_vcfs.tsv
+done > matched_unfiltered/matched_vcfs.list
 
 # Unmatched tumour VCF list
 for f in `cat studies.list`; do
-  for g in ${PUDIR}/$f/metadata/*one_tumour_per_patient_unmatched_tum.txt; do
-    # Exclude rejected samples
-    grep -vf ${PUDIR}/${f}/metadata/rejected_DNA_samples.list $g | while read sample; do
-      ls ${PUDIR}/$f/analysis/caveman_files/*/*smartphase.vep.vcf.gz \
-         ${PUDIR}/$f/analysis/pindel_files/*/*pindel.vep.vcf.gz 2>/dev/null | grep "$sample"
-    done
+  for g in $PUDIR/$f/metadata/*one_tumour_per_patient_unmatched_tum.txt; do
+    cat $g | grep -v $PUDIR/$f/metadata/rejected_DNA_samples.list > unmatched_unfiltered/${f}-samples.list
+    dir $PUDIR/$f/analysis/caveman_files/*/*smartphase.vep.vcf.gz $PUDIR/$f/analysis/pindel_files/*/*pindel.vep.vcf.gz |
+      grep -f unmatched_unfiltered/${f}-samples.list
   done
-done > unmatched_somatic_vcfs.tsv
+done > unmatched_unfiltered/unmatched_vcfs.list
 ```
 
 #### 1.3 Generate the input MAF file
@@ -127,7 +123,7 @@ The files used are from your somatic variant release, which should have been gen
 
 ```bash
 # Working directory
-cd ${PUDIR}/analysis/unmatched/release_v${i}
+# cd  ${PUDIR}/combined_analysis/unmatched_tumours/release_v${i}
 
 # Define the somatic variant release version to use
 varrel=1
@@ -135,18 +131,14 @@ varrel=1
 # Copy the MAF header from the first cohort
 for f in `cat studies.list | head -n1`; do
   head -n1 $PUDIR/$f/analysis/variants_combined/release_v${varrel}/all_tumours/all_samples/*filtered_mutations_all_allTum_keep.maf \
-    > combined_cohorts_keep_unmatched.maf
+    > mafs/combined_cohorts_keep_unmatched.maf
 done
 
-# Extract variants from unmatched tumours only
+# Get the lines from unmatched tumours
 for f in `cat studies.list`; do
-  # Get unmatched sample IDs for this cohort
-  cat $PUDIR/$f/metadata/*one_tumour_per_patient_unmatched_tum.txt | \
-    grep -vf $PUDIR/$f/metadata/rejected_DNA_samples.list | \
-    while read sample; do
-      grep -w "$sample" $PUDIR/$f/analysis/variants_combined/release_v${varrel}/all_tumours/all_samples/*filtered_mutations_all_allTum_keep.maf
-    done
-done >> combined_cohorts_keep_unmatched.maf
+  grep -hwf unmatched_unfiltered/${f}-samples.list $PUDIR/$f/analysis/variants_combined/release_v${varrel}/all_tumours/all_samples/*filtered_mutations_all_allTum_keep.maf
+done >> mafs/combined_cohorts_keep_unmatched.maf
+
 ```
 
 
