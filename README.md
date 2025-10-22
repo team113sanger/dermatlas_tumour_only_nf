@@ -9,13 +9,13 @@
 
 ## Pipeline summary
 
-In brief, the pipeline takes a cohort of tumour samples that have been pre-processed with `dermatlas_somatic_qc_nf` and
+In brief, the pipeline takes cohort(s) of tumour samples that have been pre-processed with `dermatlas_somatic_qc_nf` and
 
-- Collates variants from matched normal-tumour samples in the cohort creating a panel of normals (PON) for filtering recurrent technical artefacts and germline variants.
+- Collates variants from matched normal-tumour samples in the cohort(s) for filtering recurrent technical artefacts and germline variants.
 - Annotates common SNPs from the unmatched tumour samples using dbSNP.
-- Counts germline variants in the matched normal samples for the cohort, so that they can be annotated in the unmatched tumour samples.
+- Counts germline variants in the matched normal samples for the cohort(s), so that they can be annotated in the unmatched tumour samples.
 - Validates MNV variant calls in the unmatched tumour samples.
-- Flags and filters variants in the unmatched tumour samples using the PON, dbSNP and germline counts.
+- Flags and filters variants in the unmatched tumour samples using the normal and matched tumour sample, dbSNP and germline counts.
 - Annotates filtered variants in the unmatched tumour samples using a custom Dermatlas tiering system - which ranks variants based on their likely clinical significance and the strength of evidence supporting their veracity.
 - Generates summary plots and reports for the unmatched tumour samples.
 
@@ -27,6 +27,7 @@ In brief, the pipeline takes a cohort of tumour samples that have been pre-proce
 - `matched_somatic_vcfs`: path to a list of somatic VCFs from unmatched tumour samples in the cohort (one VCF per line).
 - `unmatched_maf`: path to a MAF file collated from the unmatched tumour samples in the cohort generated using `dermatlas_somatic_qc_nf`.
 - `transcripts`:  path to a file containing Ensembl transcripts where we wish to modify the canonical transcript for accurate variant reporting.
+- `transcript_info`:  path to a GTF file containing transcript information (exon locations used in fitering processed pseudogenes)
 - `cgc_file`: path to a Cosmic Cancer Gene Census file for annotating variants
 - `oncokb_file`: path to an  Onkokb file for annotating variants
 - `hotspot_file`: path to a cancer hotspots file for annotating variants
@@ -53,13 +54,99 @@ The pipeline can configured to run on either Sanger OpenStack secure-lustre inst
 ## Pipeline visualisation
 Created using nextflow's in-built visualitation features.
 ```
-nextflow run main.nf -preview -with-dag -params-file tests/testdata/test_params.json flowchart.mmd
+nextflow run main.nf -preview -with-dag flowchart.mmd -params-file tests/testdata/test_params.json -profile secure_lustre
 ```
 
 
 ```mermaid
 flowchart TB
-    
+    subgraph " "
+    v0["Channel.fromPath"]
+    v12["Channel.fromPath"]
+    v24["Channel.fromPath"]
+    v43["transcripts"]
+    v45["transcripts"]
+    v49["Channel.of"]
+    v51["dbsnp_files"]
+    v54["cgc_file"]
+    v55["oncokb_file"]
+    v56["hotspot_file"]
+    v57["transcript_info"]
+    v59["cgc_file"]
+    v60["oncokb_file"]
+    v61["hotspot_file"]
+    v62["transcript_info"]
+    v65["Channel.fromList"]
+    v67["Channel.of"]
+    end
+    subgraph " "
+    v11[" "]
+    v23[" "]
+    v35[" "]
+    v48[" "]
+    v53[" "]
+    v64[" "]
+    v70[" "]
+    end
+    v42([COUNT_NON_REF_GTS])
+    v44([SUBSET_MATCHED])
+    v46([SUBSET_UNMATCHED])
+    v47([CHECK_SOMATIC_MNV_CALLS])
+    v52([FIND_SNP_POSITIONS])
+    v58([GENERATE_CONFIG_FILE])
+    v63([FILTER_AND_FLAG_VARIANTS])
+    v68([CATEGORISE_VARIANTS])
+    v69([PLOT_VARIANTS])
+    v1(( ))
+    v13(( ))
+    v50(( ))
+    v66(( ))
+    v0 --> v1
+    v1 --> v11
+    v12 --> v13
+    v13 --> v23
+    v24 --> v13
+    v13 --> v35
+    v1 --> v42
+    v42 --> v58
+    v42 --> v63
+    v43 --> v44
+    v13 --> v44
+    v44 --> v58
+    v44 --> v63
+    v45 --> v46
+    v13 --> v46
+    v46 --> v58
+    v46 --> v63
+    v13 --> v47
+    v47 --> v58
+    v47 --> v48
+    v47 --> v63
+    v49 --> v50
+    v51 --> v52
+    v50 --> v52
+    v52 --> v53
+    v52 --> v58
+    v52 --> v63
+    v54 --> v58
+    v55 --> v58
+    v56 --> v58
+    v57 --> v58
+    v50 --> v58
+    v58 --> v63
+    v59 --> v63
+    v60 --> v63
+    v61 --> v63
+    v62 --> v63
+    v50 --> v63
+    v63 --> v64
+    v63 --> v66
+    v65 --> v66
+    v67 --> v68
+    v66 --> v68
+    v68 --> v69
+    v69 --> v70
+
 ```
 
 ## Testing
