@@ -29,7 +29,7 @@ process SUBSET_MAF {
 }
 
 process CHECK_SOMATIC_MNV_CALLS {
-    container "gitlab-registry.internal.sanger.ac.uk/dermatlas/analysis-methods/var_filter:0.2"
+    container "gitlab-registry.internal.sanger.ac.uk/dermatlas/analysis-methods/var_filter:0.2.0"
     publishDir "${params.outdir}/mnv_check", mode: 'copy', pattern: "*"
 
     input: 
@@ -53,7 +53,7 @@ process CHECK_SOMATIC_MNV_CALLS {
 }
 
 // process GENERATE_UNMATCHED_MAF {
-//     container "gitlab-registry.internal.sanger.ac.uk/dermatlas/analysis-methods/var_filter:0.2"
+//     container "gitlab-registry.internal.sanger.ac.uk/dermatlas/analysis-methods/var_filter:0.2.0"
 //     publishDir "${params.outdir}/mafs", mode: 'copy', pattern: "*.maf"
 
 //     input:

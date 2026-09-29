@@ -77,7 +77,7 @@ changelog entry to indicate the impact of the change:
 - **INTEGRATION** - **Breaking:** a run killed by `bkill` or an LSF limit now exits
   `128+n` and writes `.completed_with_error` rather than looking successful.
 - **REPRODUCIBILITY** - every process container is pinned to a tag
-  (`dermatlas/analysis-methods/maf:0.6.5`, `dermatlas/analysis-methods/var_filter:0.2`)
+  (`dermatlas/analysis-methods/maf:0.6.5`, `dermatlas/analysis-methods/var_filter:0.2.0`)
   instead of the untagged `latest`, and the process that ran the
   `var_filter/feature/build_fix:35703fcc` image moves to the same `var_filter` tag. Results
   may differ from a 0.2.0 run that pulled a different `latest`.
