@@ -38,7 +38,7 @@ process CATEGORISE_VARIANTS {
 }
 
 process PLOT_VARIANTS {
-    container "gitlab-registry.internal.sanger.ac.uk/dermatlas/analysis-methods/maf"
+    container "gitlab-registry.internal.sanger.ac.uk/dermatlas/analysis-methods/maf:0.6.5"
     publishDir path: { "${params.outdir}/release_${params.release_version}/QC_keep/qc_tier${tier}_${cohort}" }, mode: 'copy', pattern: "*"
 
     input:

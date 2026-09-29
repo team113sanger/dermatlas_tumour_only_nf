@@ -49,7 +49,7 @@ process GENERATE_CONFIG_FILE {
 }
 
 process FILTER_AND_FLAG_VARIANTS {
-    container "gitlab-registry.internal.sanger.ac.uk/dermatlas/analysis-methods/var_filter/feature/build_fix:35703fcc"
+    container "gitlab-registry.internal.sanger.ac.uk/dermatlas/analysis-methods/var_filter:0.2"
     publishDir "${params.outdir}/release_${params.release_version}/filtered/combined", mode: 'copy', pattern: "*.maf"
     publishDir "${params.outdir}/release_${params.release_version}/intermediate_files", mode: 'copy', pattern: "intermediate_files/*"
 
