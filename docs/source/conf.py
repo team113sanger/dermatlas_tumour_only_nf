@@ -9,7 +9,7 @@
 project = 'dermatlas_tumour_only_calling_nf'
 copyright = '2025, DERMATLAS Team'
 author = 'DERMATLAS Team'
-release = '0.2.0'
+release = '0.3.0'
 
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration

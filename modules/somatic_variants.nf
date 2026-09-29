@@ -1,5 +1,8 @@
 process SUBSET_MAF {
-    publishDir "${params.outdir}/${meta.analysis_type}_unfiltered", mode: 'copy', pattern: "*.maf"
+    // Closure form: `meta` is a task input, so the path can only be resolved per
+    // task. A bare string is evaluated when the process is defined, where `meta`
+    // does not exist yet.
+    publishDir path: { "${params.outdir}/${meta.analysis_type}_unfiltered" }, mode: 'copy', pattern: "*.maf"
     container "gitlab-registry.internal.sanger.ac.uk/dermatlas/analysis-methods/maf:0.6.5"
     input: 
     tuple val(meta), path(file_list), path(vcf_files)
@@ -26,7 +29,7 @@ process SUBSET_MAF {
 }
 
 process CHECK_SOMATIC_MNV_CALLS {
-    container "gitlab-registry.internal.sanger.ac.uk/dermatlas/analysis-methods/var_filter"
+    container "gitlab-registry.internal.sanger.ac.uk/dermatlas/analysis-methods/var_filter:0.2.0"
     publishDir "${params.outdir}/mnv_check", mode: 'copy', pattern: "*"
 
     input: 
@@ -50,7 +53,7 @@ process CHECK_SOMATIC_MNV_CALLS {
 }
 
 // process GENERATE_UNMATCHED_MAF {
-//     container "gitlab-registry.internal.sanger.ac.uk/dermatlas/analysis-methods/var_filter"
+//     container "gitlab-registry.internal.sanger.ac.uk/dermatlas/analysis-methods/var_filter:0.2.0"
 //     publishDir "${params.outdir}/mafs", mode: 'copy', pattern: "*.maf"
 
 //     input:

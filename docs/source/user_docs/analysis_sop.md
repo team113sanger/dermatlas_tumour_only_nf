@@ -1,6 +1,6 @@
 # Nextflow: Tumour-Only Variant Filtering Pipeline
 
-Variant call filtering and annotation for unmatched tumour samples in DERMATLAS can be run with a Nextflow pipeline in a largely "set-and-forget" manner. This document contains an SOP for configuring and running the pipeline, which replicates the [steps detailed in the manual process](https://confluence.sanger.ac.uk/spaces/CAS/pages/156434665/DERMATLAS+Unmatched+tumour+variant+call+filtering). For a more detailed explanation of the pipeline, inputs, steps and requirements can be found within the pipeline project [README](https://gitlab.internal.sanger.ac.uk/DERMATLAS/analysis-methods/dermatlas_tumour_only_calling_nf/-/blob/develop/README.md?ref_type=heads)
+Variant call filtering and annotation for unmatched tumour samples in DERMATLAS can be run with a Nextflow pipeline in a largely "set-and-forget" manner. This document contains an SOP for configuring and running the pipeline, which replicates the [steps detailed in the manual process](https://confluence.sanger.ac.uk/spaces/CAS/pages/156434665/DERMATLAS+Unmatched+tumour+variant+call+filtering). For a more detailed explanation of the pipeline, inputs, steps and requirements can be found within the pipeline project [README](https://github.com/team113sanger/dermatlas_tumour_only_nf/blob/develop/README.md)
 
 ## Purpose (Mirrored from [manual](https://confluence.sanger.ac.uk/spaces/CAS/pages/156434665/DERMATLAS+Unmatched+tumour+variant+call+filtering))
  
@@ -144,18 +144,18 @@ done >> mafs/combined_cohorts_keep_unmatched.maf
 
 ### 2. Generating the pipeline config file
 
-The Nextflow pipeline's config file encodes all of the input files and options to pass to the pipeline. An example configuration file is provided in the pipeline repository at `assets/tumour_only.config`.
+The Nextflow pipeline's config file encodes all of the input files and options to pass to the pipeline. The configuration file is provided in the pipeline repository at `assets/tumour_only.config`; for a project provisioned from the [Dermatlas cohorts page](https://team113.sanger.ac.uk/dermatlas/cohorts/) it is already in place at `commands/unmatched_variants_pipe/tumour_only.config`, and reads every location from the project's `source_me.sh` (`ANALYSIS_DIR`, and the cohort sample list `DNA_PAIR_LIST_ONE_TUMOUR_PER_PATIENT_UNMATCHED`). If you place the step 1 files at the paths below, it needs no editing.
 
 For most pipeline runs there are **7 parameters** that you need to specify:
 
 | Parameter | Description | Example |
 |:----------|:-----------|:--------|
-| `germline_vcfs` | Path to germline VCF list created in step 1.1 | `"${PROJECT_DIR}/analysis/unmatched/germline_variant_files.tsv"` |
-| `matched_somatic_vcfs` | Path to matched somatic VCF list created in step 1.2 | `"${PROJECT_DIR}/analysis/unmatched/matched_somatic_vcfs.tsv"` |
-| `unmatched_somatic_vcfs` | Path to unmatched somatic VCF list created in step 1.2 | `"${PROJECT_DIR}/analysis/unmatched/unmatched_somatic_vcfs.tsv"` |
-| `unmatched_maf` | Path to combined unmatched MAF created in step 1.3 | `"${PROJECT_DIR}/analysis/unmatched/combined_cohorts_keep_unmatched.maf"` |
+| `germline_vcfs` | Path to germline VCF list created in step 1.1 | `"${ANALYSIS_DIR}/unmatched/germline_variant_files.tsv"` |
+| `matched_somatic_vcfs` | Path to matched somatic VCF list created in step 1.2 | `"${ANALYSIS_DIR}/unmatched/matched_somatic_vcfs.tsv"` |
+| `unmatched_somatic_vcfs` | Path to unmatched somatic VCF list created in step 1.2 | `"${ANALYSIS_DIR}/unmatched/unmatched_somatic_vcfs.tsv"` |
+| `unmatched_maf` | Path to combined unmatched MAF created in step 1.3 | `"${ANALYSIS_DIR}/unmatched/combined_cohorts_keep_unmatched.maf"` |
 | `release_version` | Release version identifier | `"v1"` |
-| `outdir` | Output directory for results | `"${PROJECT_DIR}/analysis/unmatched_variant_calling"` |
+| `outdir` | Output directory for results | `"${ANALYSIS_DIR}/unmatched_variant_calling"` |
 | `cohorts` | Map of cohort names to sample list files | See example below |
 
 There are additional parameters specified within the config file (paths to resource files like COSMIC, OncoKB, dbSNP), but these won't normally need changing as they are configured per-profile (farm22 vs secure_lustre).
@@ -165,14 +165,14 @@ There are additional parameters specified within the config file (paths to resou
 ```groovy
 params {
     // Input files (created in Step 1)
-    germline_vcfs = "${PROJECT_DIR}/analysis/unmatched/release_v${i}/germline_variant_files.tsv"
-    unmatched_somatic_vcfs = "${PROJECT_DIR}/analysis/unmatched/release_v${i}/unmatched_somatic_vcfs.tsv"
-    matched_somatic_vcfs = "${PROJECT_DIR}/analysis/unmatched/release_v${i}/matched_somatic_vcfs.tsv"
-    unmatched_maf = "${PROJECT_DIR}/analysis/unmatched/release_v${i}/combined_cohorts_keep_unmatched.maf"
+    germline_vcfs = "${ANALYSIS_DIR}/unmatched/germline_variant_files.tsv"
+    unmatched_somatic_vcfs = "${ANALYSIS_DIR}/unmatched/unmatched_somatic_vcfs.tsv"
+    matched_somatic_vcfs = "${ANALYSIS_DIR}/unmatched/matched_somatic_vcfs.tsv"
+    unmatched_maf = "${ANALYSIS_DIR}/unmatched/combined_cohorts_keep_unmatched.maf"
 
     // Release information
+    outdir = "${ANALYSIS_DIR}/unmatched_variant_calling"
     release_version = "v1"
-    outdir = "${PROJECT_DIR}/analysis/unmatched_variant_calling/release_v${i}"
 
     transcripts = "/lustre/scratch127/casm/projects/dermatlas/resources/ensembl/dermatlas_noncanonical_transcripts_ens103.v2.tsv"
     cgc_file = "/lustre/scratch127/casm/projects/dermatlas/resources/tumour-only/cgc_genes.list"
@@ -184,9 +184,9 @@ params {
     // Define cohorts with their sample lists for QC plotting
     // Each cohort name will be used as a subdirectory in the output
     cohorts = [
-        "cohort1": "${PROJECT_DIR}/metadata/cohort1_samples.tsv",
+        "all_samples": "${DNA_PAIR_LIST_ONE_TUMOUR_PER_PATIENT_UNMATCHED}",
         // Add more cohorts as needed:
-        // "cohort2": "${PROJECT_DIR}/metadata/cohort1_samples.tsv",
+        // "cohort2": "${PROJECT_DIR}/metadata/cohort2_samples.tsv",
     ]
 }
 ```
@@ -203,48 +203,26 @@ When all input files have been prepared and the configuration file is set up, yo
 
 #### Launching the pipeline
 
-Create a wrapper script based on the example in `assets/run_tumour_only.sh`:
+The pipeline is launched with the wrapper script `assets/run_tumour_only.sh`. For a project provisioned from the [Dermatlas cohorts page](https://team113.sanger.ac.uk/dermatlas/cohorts/) it is already in place at `commands/unmatched_variants_pipe/run_tumour_only.sh`, and needs no editing: it sources the project's `source_me.sh`, checks the environment, and runs the release named by its `REVISION` with `commands/unmatched_variants_pipe/tumour_only.config`.
 
-**run_tumour_only.sh**
-
-```bash
-#!/bin/bash
-#BSUB -q normal
-#BSUB -G team113-grp
-#BSUB -R "select[mem>8000] rusage[mem=8000] span[hosts=1]"
-#BSUB -M 8000
-
-# Load module dependencies
-module load nextflow-23.10.0
-module load /software/modules/ISG/singularity/3.11.4
-
-# Set variables
-REVISION="0.1.0"  # Use the latest version
-CONFIG="${PROJECT_DIR}/commands/tumour_only.config"
-
-# Run the pipeline
-nextflow run "https://gitlab.internal.sanger.ac.uk/DERMATLAS/analysis-methods/dermatlas_tumour_only_calling_nf" \
-  -r ${REVISION} \
-  -c ${CONFIG} \
-  -profile farm22 \
-  -resume
-```
-
-Submit the job:
+Submit it from the project directory:
 
 ```bash
-bsub -e logs/tumour_only.e -o logs/tumour_only.o < run_tumour_only.sh
+cd ${PROJECT_DIR}
+bsub -e logs/tumour_only.e -o logs/tumour_only.o < commands/unmatched_variants_pipe/run_tumour_only.sh
 ```
 
-The bsub magic at the start of the wrapper script will send a Nextflow "master job" to the normal queue, which looks after all other jobs. Nextflow will shortly start submitting jobs on your behalf to the relevant queues.
+To run without a dermanager `source_me.sh`, or to opt out of website logging, Slack notifications or work-directory cleanup, see "Without the website" and "Toggles" in the pipeline [README](https://github.com/team113sanger/dermatlas_tumour_only_nf/blob/develop/README.md).
+
+The bsub magic at the start of the wrapper script will send a Nextflow "master job" to the queue named in its `#BSUB -q` line, which looks after all other jobs. Nextflow will shortly start submitting jobs on your behalf to the relevant queues.
 
 :::{note}
 **Monitoring the Pipeline**
 
 You can monitor the pipeline progress by checking:
 - The master job log: `logs/tumour_only.o`
-- Nextflow's work directory progress
-- Individual process logs in the Nextflow work directories
+- The Nextflow log: `unmatched_variants_pipe/logs/nextflow-run-<RUN_ID>.log`
+- Individual process logs in the Nextflow work directories under `unmatched_variants_pipe/work/`
 :::
 
 #### Troubleshooting problem runs
@@ -252,7 +230,7 @@ You can monitor the pipeline progress by checking:
 There are several reasons the pipeline might fail including bugs in the pipeline, issues with LSF, or misconfiguration. In most cases (especially when you suspect a farm/LSF failure), simply re-submitting the pipeline will trigger the Nextflow `-resume` directive and the pipeline will pick up where it left off:
 
 ```bash
-bsub -e logs/tumour_only_retry.e -o logs/tumour_only_retry.o < run_tumour_only.sh
+bsub -e logs/tumour_only_retry.e -o logs/tumour_only_retry.o < commands/unmatched_variants_pipe/run_tumour_only.sh
 ```
 
 When jobs fail, Nextflow will provide the path to the directory a failed job was run in. Inspect the files with:
