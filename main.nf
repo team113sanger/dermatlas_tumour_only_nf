@@ -157,3 +157,9 @@ workflow TUMOUR_ONLY_CALLING {
 workflow {
     TUMOUR_ONLY_CALLING()
 }
+
+workflow.onComplete {
+    // Runs on both success and failure, after all processes have finished.
+    // All reporting (Slack + analysis-log) is handled in one reusable call.
+    Utils.reportRun(workflow, params)
+}
