@@ -20,7 +20,7 @@ changelog entry to indicate the impact of the change:
 - **INTEGRATION** - a change to how the pipeline integrates with other systems
   or infrastructure, without changing its scientific processing or results.
 
-## [Unreleased]
+## [0.3.0] - 2026-09-29
 ### Added
 - **INTEGRATION** - run reporting. `lib/Utils.groovy` (shared verbatim with the other
   Dermatlas pipelines) is wired in by `workflow.onComplete { Utils.reportRun(workflow, params) }`
@@ -50,6 +50,13 @@ changelog entry to indicate the impact of the change:
   `develop-latest`) for `dermanager projectify`. See "Asset release bundles" in the README.
 - **INTEGRATION** - `.update-version.sh` sets the release version in every file that
   records it; "Cutting a release" in the README now uses it.
+- **ROBUSTNESS** - required params are declared in `nextflow.config` and validated at the
+  start of the run: an unset input, `release_version`, reference file or empty `cohorts`
+  map now fails at launch with the names of what is missing, instead of part-way through
+  or by publishing into `release_null`. Reference files and cohort sample lists are
+  checked to exist before any process runs.
+- **ROBUSTNESS** - `study_id` names the filtered/annotated MAF and its `config.R`. The
+  default, `combined_cohorts_keep_unmatched`, reproduces the previous filenames.
 
 ### Changed
 - **INTEGRATION** - **Breaking:** the launcher no longer reads its environment from the
@@ -69,10 +76,25 @@ changelog entry to indicate the impact of the change:
   cannot `-resume` in the new one.
 - **INTEGRATION** - **Breaking:** a run killed by `bkill` or an LSF limit now exits
   `128+n` and writes `.completed_with_error` rather than looking successful.
+- **REPRODUCIBILITY** - every process container is pinned to a tag
+  (`dermatlas/analysis-methods/maf:0.6.5`, `dermatlas/analysis-methods/var_filter:0.2`)
+  instead of the untagged `latest`, and the process that ran the
+  `var_filter/feature/build_fix:35703fcc` image moves to the same `var_filter` tag. Results
+  may differ from a 0.2.0 run that pulled a different `latest`.
 - **INTEGRATION** - the pipeline is pulled from GitHub
   (`team113sanger/dermatlas_tumour_only_nf`) rather than GitLab; `manifest.homePage`
   (which pointed at the germline pipeline), the README and the docs no longer point at
   GitLab. The GitLab container registry is unchanged.
+
+### Fixed
+- **REPRODUCIBILITY** - `SUBSET_UNMATCHED` and `CHECK_SOMATIC_MNV_CALLS` stage the
+  unmatched tumour VCFs. They were paired with the *matched* VCF list, so the files named
+  in the unmatched basenames list were absent from the work directory; the perl tools
+  report that on stderr but exit 0, so the run completed with empty or partial unmatched
+  subsets and MNV checks. Unmatched variant flags and tiers from 0.2.0 may change on
+  re-running.
+- **ROBUSTNESS** - `dbsnp_file` is resolved with `files()`, so `FIND_SNP_POSITIONS` always
+  receives the VCF and its `.tbi` as a list.
 
 ## [0.2.0] - 2025-10-22
 ### Added
