@@ -20,6 +20,11 @@ changelog entry to indicate the impact of the change:
 - **INTEGRATION** - a change to how the pipeline integrates with other systems
   or infrastructure, without changing its scientific processing or results.
 
+## [0.3.0] - 2026-10-21
+- **INTEGRATION** - Removed the `-G team113-grp` LSF submission option in
+  `assets/run_tumour_only.sh` so that user space environmental variables can
+  control group selection.
+
 ## [0.3.0] - 2026-09-29
 ### Added
 - **INTEGRATION** - run reporting. `lib/Utils.groovy` (shared verbatim with the other
